@@ -918,7 +918,8 @@ const ui = {
       selInfo:(n,t)=>`✓ ${n} / ${t} seleccionados`,playTitle:'🎵 Modo de reproducción:',
       harmonic:'Armónico (simultáneo)',arpeggio:'Arpegio (sucesivo)',
       progModeTitle:'🎼 Ejercicio:',progModeId:'Identificar progresión',progModeFunc:'Función armónica',
-      funcSelTitle:'📋 Funciones a identificar:',funcKeyTitle:'🎹 Modo:',
+      regTitle:'🎹 Registro:',regLow:'Grave (C3)',regMid:'Medio (C4)',regHigh:'Agudo (C5)',
+      funcSelTitle:'📋 Funciones a identificar:',funcKeyTitle:'🎼 Modo:',
       funcHint:'Escucharás una cadencia como contexto y luego un acorde: ¿qué función tiene?'
     },
     notasRef:'🔔 Escucharás primero una <strong style="color:var(--warning)">nota de referencia</strong>, luego la nota a identificar',
@@ -1021,7 +1022,8 @@ const ui = {
       selInfo:(n,t)=>`✓ ${n} / ${t} selected`,playTitle:'🎵 Playback mode:',
       harmonic:'Harmonic (simultaneous)',arpeggio:'Arpeggio (sequential)',
       progModeTitle:'🎼 Exercise:',progModeId:'Identify progression',progModeFunc:'Harmonic function',
-      funcSelTitle:'📋 Functions to identify:',funcKeyTitle:'🎹 Mode:',
+      regTitle:'🎹 Register:',regLow:'Low (C3)',regMid:'Mid (C4)',regHigh:'High (C5)',
+      funcSelTitle:'📋 Functions to identify:',funcKeyTitle:'🎼 Mode:',
       funcHint:'You will hear a cadence as context and then a chord: what is its function?'
     },
     notasRef:'🔔 You will first hear a <strong style="color:var(--warning)">reference note</strong>, then the note to identify',
@@ -1353,7 +1355,8 @@ const customSettings = {
   septimas:    { selected: musicData.septimas.map(x => x.name), harmonic:true, arpeggio:false },
   progresiones:{
     selected: musicData.progresiones.map(x => x.name),
-    funcMode:false, funcSel: [...harmonicFunctions.names], funcMajor:true, funcMinor:false
+    funcMode:false, funcSel: [...harmonicFunctions.names], funcMajor:true, funcMinor:false,
+    regLow:false, regMid:true, regHigh:false
   },
   escalas:     { selected: musicData.escalas.map(x => x.name) },
   notas:       {
@@ -2085,6 +2088,14 @@ function updateSettingsPanel() {
           <button class="toggle-btn ${!sp.funcMode?'active':''}" onclick="setProgFuncMode(false)">${sg.progModeId}</button>
           <button class="toggle-btn ${sp.funcMode?'active':''}" onclick="setProgFuncMode(true)">${sg.progModeFunc}</button>
         </div>
+      </div>
+      <div class="settings-section">
+        <h4>${sg.regTitle}</h4>
+        <div class="toggle-group">
+          <button class="toggle-btn ${sp.regLow?'active':''}"  onclick="toggleProgReg('regLow')">${sg.regLow}</button>
+          <button class="toggle-btn ${sp.regMid?'active':''}"  onclick="toggleProgReg('regMid')">${sg.regMid}</button>
+          <button class="toggle-btn ${sp.regHigh?'active':''}" onclick="toggleProgReg('regHigh')">${sg.regHigh}</button>
+        </div>
       </div>`;
       if (sp.funcMode) {
         panel.innerHTML = lead + `
@@ -2173,6 +2184,12 @@ function toggleFuncSel(name) {
   const arr = customSettings.progresiones.funcSel;
   const i = arr.indexOf(name);
   if (i > -1) { if (arr.length > 1) arr.splice(i,1); } else arr.push(name);
+  updateSettingsPanel(); nextQuestion(false);
+}
+function toggleProgReg(r) {
+  const sp = customSettings.progresiones;
+  sp[r] = !sp[r];
+  if (!sp.regLow && !sp.regMid && !sp.regHigh) sp[r] = true;
   updateSettingsPanel(); nextQuestion(false);
 }
 function toggleFuncKey(key) {
@@ -2371,7 +2388,7 @@ async function playSound() {
       currentQuestion.intervals.map(i => getFreq(i)).forEach(f => t(0, f, '1.5'));
     }
   } else if (currentMode === 'progresiones') {
-    const ko = currentQuestion.keyOffset || 0;
+    const ko = (currentQuestion.keyOffset || 0) + (currentQuestion.regShift || 0);
     progChordEvents(currentQuestion).forEach(ev => {
       t(ev.at, getFreq(ev.bass + ko), '1.1');
       ev.chord.map(s => getFreq(s + ko)).forEach(f => t(ev.at, f, '0.95'));
@@ -2417,6 +2434,26 @@ function progChordEvents(q) {
     return evs;
   }
   return q.chords.map((ch, ci) => ({ chord: ch, bass: (q.roots ? q.roots[ci] : ch[0]) - 12, at: ci * 1100 }));
+}
+
+// Registro de progresiones: desplaza la pregunta -12/0/+12 semitonos. La tonalidad se elige entre las
+// que mantienen todas las notas dentro de [PROG_LOW_LIMIT, PROG_HIGH_LIMIT] (semitonos respecto a C4).
+const PROG_LOW_LIMIT = -24, PROG_HIGH_LIMIT = 30;
+function progPlaceQuestion(q) {
+  const sp = customSettings.progresiones;
+  const shifts = [];
+  if (sp.regLow)  shifts.push(-12);
+  if (sp.regMid)  shifts.push(0);
+  if (sp.regHigh) shifts.push(12);
+  const evs = progChordEvents(q);
+  const lo = Math.min(...evs.map(e => e.bass));
+  const hi = Math.max(...evs.map(e => Math.max(...e.chord)));
+  const shift = shifts[Math.floor(Math.random() * shifts.length)];
+  const keys = [];
+  for (let k = 0; k < 12; k++) if (lo + k + shift >= PROG_LOW_LIMIT && hi + k + shift <= PROG_HIGH_LIMIT) keys.push(k);
+  if (!keys.length) { q.regShift = 0; return; }
+  q.regShift = shift;
+  q.keyOffset = keys[Math.floor(Math.random() * keys.length)];
 }
 
 // ==================== PREGUNTAS ====================
@@ -2531,6 +2568,7 @@ function nextQuestion(autoPlay = true) {
       target: opts[Math.floor(Math.random() * opts.length)],
       keyOffset: Math.floor(Math.random() * 12)
     };
+    progPlaceQuestion(currentQuestion);
   } else {
     const pc = document.querySelector('.play-controls');
     if (pc) pc.style.display = '';
@@ -2541,6 +2579,7 @@ function nextQuestion(autoPlay = true) {
     if (currentMode === 'escalas' || currentMode === 'progresiones') {
       currentQuestion.keyOffset = Math.floor(Math.random() * 12);
     }
+    if (currentMode === 'progresiones') progPlaceQuestion(currentQuestion);
     if (currentMode === 'inversiones') {
       currentQuestion.register = [3,4,5][Math.floor(Math.random() * 3)];
     }
