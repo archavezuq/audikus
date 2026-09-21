@@ -916,7 +916,10 @@ const ui = {
     },
     sGen:{
       selInfo:(n,t)=>`✓ ${n} / ${t} seleccionados`,playTitle:'🎵 Modo de reproducción:',
-      harmonic:'Armónico (simultáneo)',arpeggio:'Arpegio (sucesivo)'
+      harmonic:'Armónico (simultáneo)',arpeggio:'Arpegio (sucesivo)',
+      progModeTitle:'🎼 Ejercicio:',progModeId:'Identificar progresión',progModeFunc:'Función armónica',
+      funcSelTitle:'📋 Funciones a identificar:',funcKeyTitle:'🎹 Modo:',
+      funcHint:'Escucharás una cadencia como contexto y luego un acorde: ¿qué función tiene?'
     },
     notasRef:'🔔 Escucharás primero una <strong style="color:var(--warning)">nota de referencia</strong>, luego la nota a identificar',
     notasNoRef:'🔕 Sin referencia — identifica la nota directamente',
@@ -1016,7 +1019,10 @@ const ui = {
     },
     sGen:{
       selInfo:(n,t)=>`✓ ${n} / ${t} selected`,playTitle:'🎵 Playback mode:',
-      harmonic:'Harmonic (simultaneous)',arpeggio:'Arpeggio (sequential)'
+      harmonic:'Harmonic (simultaneous)',arpeggio:'Arpeggio (sequential)',
+      progModeTitle:'🎼 Exercise:',progModeId:'Identify progression',progModeFunc:'Harmonic function',
+      funcSelTitle:'📋 Functions to identify:',funcKeyTitle:'🎹 Mode:',
+      funcHint:'You will hear a cadence as context and then a chord: what is its function?'
     },
     notasRef:'🔔 You will first hear a <strong style="color:var(--warning)">reference note</strong>, then the note to identify',
     notasNoRef:'🔕 No reference — identify the note directly',
@@ -1097,7 +1103,8 @@ const termEN = {
   'Dom. 7ma':'Dom. 7th','Mayor 7ma':'Major 7th','Menor 7ma':'Minor 7th',
   'Semidisminuido':'Half-Diminished','Disminuido 7ma':'Diminished 7th',
   'Dórica':'Dorian','Mixolidio':'Mixolydian',
-  'Sus2':'Sus2','Sus4':'Sus4'
+  'Sus2':'Sus2','Sus4':'Sus4',
+  'Tónica':'Tonic','Subdominante':'Subdominant','Dominante':'Dominant'
 };
 function dn(name) { return currentLang==='es' ? name : (termEN[name]||name); }
 
@@ -1309,6 +1316,28 @@ const musicData = {
   ]
 };
 
+// Función armónica: cadencia de contexto + acorde objetivo (mismos voicings que musicData.progresiones)
+// En menor la dominante es V mayor (sensible), no v menor.
+const harmonicFunctions = {
+  names: ['Tónica','Subdominante','Dominante'],
+  major: {
+    cadence: { roots:[0,5,7,0], chords:[[0,4,7],[0,5,9],[2,7,11],[4,7,12]] },
+    targets: {
+      'Tónica':       [ {root:0, chord:[0,4,7]}, {root:0, chord:[4,7,12]} ],
+      'Subdominante': [ {root:5, chord:[0,5,9]} ],
+      'Dominante':    [ {root:7, chord:[2,7,11]}, {root:7, chord:[-1,2,7]} ]
+    }
+  },
+  minor: {
+    cadence: { roots:[0,5,7,0], chords:[[0,3,7],[0,5,8],[-1,2,7],[0,3,7]] },
+    targets: {
+      'Tónica':       [ {root:0, chord:[0,3,7]}, {root:0, chord:[3,7,12]} ],
+      'Subdominante': [ {root:5, chord:[0,5,8]} ],
+      'Dominante':    [ {root:7, chord:[-1,2,7]}, {root:7, chord:[2,7,11]} ]
+    }
+  }
+};
+
 const customSettings = {
   intervalos: {
     selectedIntervals: musicData.intervalos.map(i => i.name),
@@ -1318,7 +1347,10 @@ const customSettings = {
   triadas:     { selected: musicData.triadas.map(x => x.name) },
   inversiones: { selected: musicData.inversiones.map(x => x.name) },
   septimas:    { selected: musicData.septimas.map(x => x.name), harmonic:true, arpeggio:false },
-  progresiones:{ selected: musicData.progresiones.map(x => x.name) },
+  progresiones:{
+    selected: musicData.progresiones.map(x => x.name),
+    funcMode:false, funcSel: [...harmonicFunctions.names], funcMajor:true, funcMinor:false
+  },
   escalas:     { selected: musicData.escalas.map(x => x.name) },
   notas:       {
     selected: musicData.notas.filter(n => [0,2,4,5,7,9,11].includes(n.semitones)).map(n => n.name),
@@ -2039,7 +2071,37 @@ function updateSettingsPanel() {
         </div>
       </div>`;
     }
-    panel.innerHTML = `
+    let lead = '';
+    if (currentMode === 'progresiones') {
+      const sp = customSettings.progresiones;
+      lead = `
+      <div class="settings-section">
+        <h4>${sg.progModeTitle}</h4>
+        <div class="toggle-group">
+          <button class="toggle-btn ${!sp.funcMode?'active':''}" onclick="setProgFuncMode(false)">${sg.progModeId}</button>
+          <button class="toggle-btn ${sp.funcMode?'active':''}" onclick="setProgFuncMode(true)">${sg.progModeFunc}</button>
+        </div>
+      </div>`;
+      if (sp.funcMode) {
+        panel.innerHTML = lead + `
+      <div class="settings-section">
+        <h4>${sg.funcSelTitle}</h4>
+        <div class="toggle-group">
+          ${harmonicFunctions.names.map(n => `<button class="toggle-btn ${sp.funcSel.includes(n)?'active':''}" onclick="toggleFuncSel('${n}')">${dn(n)}</button>`).join('')}
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>${sg.funcKeyTitle}</h4>
+        <div class="toggle-group">
+          <button class="toggle-btn ${sp.funcMajor?'active':''}" onclick="toggleFuncKey('funcMajor')">${dn('Mayor')}</button>
+          <button class="toggle-btn ${sp.funcMinor?'active':''}" onclick="toggleFuncKey('funcMinor')">${dn('Menor')}</button>
+        </div>
+        <p class="selection-info">${sg.funcHint}</p>
+      </div>`;
+        return;
+      }
+    }
+    panel.innerHTML = lead + `
       <div class="settings-section">
         <h4>📋 ${catLabel}:</h4>
         <div class="toggle-group">
@@ -2097,6 +2159,22 @@ function toggleEntonInterval(name) {
 function toggleSeptimaMode(mode) {
   customSettings.septimas[mode] = !customSettings.septimas[mode];
   if (!customSettings.septimas.harmonic && !customSettings.septimas.arpeggio) customSettings.septimas[mode] = true;
+  updateSettingsPanel(); nextQuestion(false);
+}
+function setProgFuncMode(on) {
+  customSettings.progresiones.funcMode = on;
+  updateSettingsPanel(); nextQuestion(false);
+}
+function toggleFuncSel(name) {
+  const arr = customSettings.progresiones.funcSel;
+  const i = arr.indexOf(name);
+  if (i > -1) { if (arr.length > 1) arr.splice(i,1); } else arr.push(name);
+  updateSettingsPanel(); nextQuestion(false);
+}
+function toggleFuncKey(key) {
+  const sp = customSettings.progresiones;
+  sp[key] = !sp[key];
+  if (!sp.funcMajor && !sp.funcMinor) sp[key] = true;
   updateSettingsPanel(); nextQuestion(false);
 }
 function toggleNotaMode(mode) {
@@ -2290,10 +2368,9 @@ async function playSound() {
     }
   } else if (currentMode === 'progresiones') {
     const ko = currentQuestion.keyOffset || 0;
-    currentQuestion.chords.forEach((ch, ci) => {
-      const bassS = (currentQuestion.roots ? currentQuestion.roots[ci] : ch[0]) - 12 + ko;
-      t(ci * 1100, getFreq(bassS), '1.1');
-      ch.map(s => getFreq(s + ko)).forEach(f => t(ci * 1100, f, '0.95'));
+    progChordEvents(currentQuestion).forEach(ev => {
+      t(ev.at, getFreq(ev.root - 12 + ko), '1.1');
+      ev.chord.map(s => getFreq(s + ko)).forEach(f => t(ev.at, f, '0.95'));
     });
   } else if (currentMode === 'escalas') {
     const ko = currentQuestion.keyOffset || 0;
@@ -2324,6 +2401,17 @@ async function playSound() {
     const sq = currentQuestion.midiSequence;
     sq.forEach((midi, i) => t(i * 420, midiFreq(midi), i < sq.length-1 ? '0.40' : '0.7'));
   }
+}
+
+// Acordes a tocar en una pregunta de progresiones: [{chord, root, at(ms)}]
+// Función armónica: cadencia de contexto, pausa y acorde objetivo
+function progChordEvents(q) {
+  if (q.func) {
+    const evs = q.cadence.chords.map((ch, i) => ({ chord: ch, root: q.cadence.roots[i], at: i * 1100 }));
+    evs.push({ chord: q.target.chord, root: q.target.root, at: q.cadence.chords.length * 1100 + 700 });
+    return evs;
+  }
+  return q.chords.map((ch, ci) => ({ chord: ch, root: q.roots ? q.roots[ci] : ch[0], at: ci * 1100 }));
 }
 
 // ==================== PREGUNTAS ====================
@@ -2421,6 +2509,23 @@ function nextQuestion(autoPlay = true) {
     renderEntonSeqUI();
     if (autoPlay) setTimeout(() => playEntonSeqRef(), 400);
     return;
+  } else if (currentMode === 'progresiones' && customSettings.progresiones.funcMode) {
+    const pc = document.querySelector('.play-controls');
+    if (pc) pc.style.display = '';
+    const sp = customSettings.progresiones;
+    options = harmonicFunctions.names.filter(n => sp.funcSel.includes(n)).map(n => ({ name: n }));
+    if (!options.length) { alert('Selecciona al menos una función'); return; }
+    correctIndex = Math.floor(Math.random() * options.length);
+    const keys = [];
+    if (sp.funcMajor) keys.push('major');
+    if (sp.funcMinor) keys.push('minor');
+    const data = harmonicFunctions[keys[Math.floor(Math.random() * keys.length)]];
+    const opts = data.targets[options[correctIndex].name];
+    currentQuestion = {
+      name: options[correctIndex].name, func: true, cadence: data.cadence,
+      target: opts[Math.floor(Math.random() * opts.length)],
+      keyOffset: Math.floor(Math.random() * 12)
+    };
   } else {
     const pc = document.querySelector('.play-controls');
     if (pc) pc.style.display = '';
