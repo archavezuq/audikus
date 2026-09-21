@@ -1636,7 +1636,17 @@ function openExerciseOverlay() {
   scrollToExerciseArea();
 }
 
+// Silencia todo: temporizadores de reproducción, avance automático a la siguiente pregunta y notas sonando
+let nextQTimer = null;
+function stopAllSound() {
+  studyTimers.forEach(t => clearTimeout(t));
+  studyTimers = [];
+  if (nextQTimer) { clearTimeout(nextQTimer); nextQTimer = null; }
+  try { synth.releaseAll(); } catch(e) {}
+}
+
 function closeExerciseOverlay() {
+  stopAllSound();
   document.getElementById('exerciseOverlay').classList.remove('open');
   if (typeof micStream !== 'undefined' && micStream) stopSinging();
   closeSheet();
@@ -1682,6 +1692,7 @@ function renderModeCards() {
 }
 
 function selectModeCard(mode) {
+  stopAllSound();
   currentMode = mode;
   renderModeCards();
   renderModeChips();
@@ -1705,6 +1716,7 @@ function renderModeChips() {
 }
 
 function selectModeChip(mode) {
+  stopAllSound();
   currentMode = mode;
   renderModeCards();
   renderModeChips();
@@ -2658,7 +2670,7 @@ function checkAnswer(selected, correct, btn) {
     }
   }
   updateScoreboard();
-  setTimeout(() => nextQuestion(), 2800);
+  nextQTimer = setTimeout(() => { nextQTimer = null; nextQuestion(); }, 2800);
 }
 
 function popEl(id) {
