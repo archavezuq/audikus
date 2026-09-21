@@ -1264,14 +1264,15 @@ const musicData = {
   progresiones: [
     // roots = raíz de cada acorde (relativo a C4); chords = 3 voces superiores con conducción suave
     // Voicings diseñados para conducción por grado en las 3 voces superiores + bajo por roots
-    // I→IV: voz común + movimiento por tono; IV→V: voces suben por tono; V→I: bajan por tono
-    { name:'I - IV - V - I (Mayor)',    roots:[0,5,7,0],  chords:[[0,4,7],[0,5,9],[2,7,11],[4,7,12]] },
-    // I→V: 3 voces bajan por grado; V→vi: 3 voces suben; vi→IV: 2 comunes + 1 sube
-    { name:'I - V - vi - IV (Mayor)',   roots:[0,7,9,5],  chords:[[0,4,7],[-1,2,7],[0,4,9],[0,5,9]] },
+    // I→IV: voz común + movimiento por tono; IV→V: bajo sube y voces bajan (mov. contrario); V→I: por grado
+    { name:'I - IV - V - I (Mayor)',    roots:[0,5,7,0],  chords:[[0,4,7],[0,5,9],[-1,2,7],[0,4,7]] },
+    // I→V: bajo sube, voces suben por grado; V→vi (cadencia rota): sensible sube, otras 2 voces bajan, 3ª del vi duplicada; vi→IV: mov. contrario
+    { name:'I - V - vi - IV (Mayor)',   roots:[0,7,9,5],  chords:[[0,4,7],[2,7,11],[0,4,12],[0,5,9]] },
     // ii→V: D común + 2 suben; V→I: E sube, G común, B sube semitono
     { name:'ii - V - I (Mayor)',        roots:[2,7,0],    chords:[[2,5,9],[2,7,11],[4,7,12]] },
     // I→vi: 2 comunes + G sube; vi→IV: 2 comunes + E sube; IV→V: 3 voces suben por tono
-    { name:'I - vi - IV - V (Mayor)',   roots:[0,9,5,7],  chords:[[0,4,7],[0,4,9],[0,5,9],[2,7,11]] },
+    // (IV→V: bajo sube, voces superiores bajan en mov. contrario)
+    { name:'I - vi - IV - V (Mayor)',   roots:[0,9,5,7],  chords:[[0,4,7],[0,4,9],[0,5,9],[-1,2,7]] },
     // I→IV: C común + 2 suben; IV→I: C común + 2 bajan
     { name:'I - IV - I (Mayor)',        roots:[0,5,0],    chords:[[0,4,7],[0,5,9],[0,4,7]] },
     // I→V: G común + C y E bajan; V→I: G común + B y D suben
@@ -1324,10 +1325,10 @@ const musicData = {
 const harmonicFunctions = {
   names: ['Tónica','Subdominante','Dominante'],
   major: {
-    cadence: { roots:[0,5,7,0], chords:[[0,4,7],[0,5,9],[2,7,11],[4,7,12]] },
+    cadence: { roots:[0,5,7,0], chords:[[0,4,7],[0,5,9],[-1,2,7],[0,4,7]] },
     targets: {
-      'Tónica':       [ {root:0, chord:[4,7,12]}, {root:9, bass:-15, chord:[4,9,12]} ],
-      'Subdominante': [ {root:5, chord:[0,5,9]}, {root:2, chord:[2,5,9]} ],
+      'Tónica':       [ {root:0, chord:[0,4,7]}, {root:9, bass:-15, chord:[0,4,9]} ],
+      'Subdominante': [ {root:5, chord:[0,5,9]}, {root:2, chord:[-3,2,5]} ],
       'Dominante':    [ {root:7, chord:[2,7,11]} ]
     }
   },
