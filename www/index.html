@@ -1319,21 +1319,23 @@ const musicData = {
 // Función armónica: cadencia de contexto + acorde objetivo (mismos voicings que musicData.progresiones)
 // En menor la dominante es V mayor (sensible), no v menor.
 // Sustitutos: vi/ii (mayor) y III/VI (menor) como tónica/subdominante relativas.
+// Cada objetivo se conduce desde el último acorde de la cadencia con saltos de <= 4 semitonos por voz;
+// `bass` (opcional) fija el bajo una octava abajo cuando la raíz normal daría un salto de 8-9 semitonos.
 const harmonicFunctions = {
   names: ['Tónica','Subdominante','Dominante'],
   major: {
     cadence: { roots:[0,5,7,0], chords:[[0,4,7],[0,5,9],[2,7,11],[4,7,12]] },
     targets: {
-      'Tónica':       [ {root:0, chord:[0,4,7]}, {root:0, chord:[4,7,12]}, {root:9, chord:[0,4,9]} ],
+      'Tónica':       [ {root:0, chord:[4,7,12]}, {root:9, bass:-15, chord:[4,9,12]} ],
       'Subdominante': [ {root:5, chord:[0,5,9]}, {root:2, chord:[2,5,9]} ],
-      'Dominante':    [ {root:7, chord:[2,7,11]}, {root:7, chord:[-1,2,7]} ]
+      'Dominante':    [ {root:7, chord:[2,7,11]} ]
     }
   },
   minor: {
     cadence: { roots:[0,5,7,0], chords:[[0,3,7],[0,5,8],[-1,2,7],[0,3,7]] },
     targets: {
-      'Tónica':       [ {root:0, chord:[0,3,7]}, {root:0, chord:[3,7,12]}, {root:3, chord:[-2,3,7]} ],
-      'Subdominante': [ {root:5, chord:[0,5,8]}, {root:8, chord:[0,3,8]} ],
+      'Tónica':       [ {root:0, chord:[0,3,7]}, {root:3, chord:[-2,3,7]} ],
+      'Subdominante': [ {root:5, chord:[0,5,8]}, {root:8, bass:-16, chord:[0,3,8]} ],
       'Dominante':    [ {root:7, chord:[-1,2,7]}, {root:7, chord:[2,7,11]} ]
     }
   }
@@ -2370,7 +2372,7 @@ async function playSound() {
   } else if (currentMode === 'progresiones') {
     const ko = currentQuestion.keyOffset || 0;
     progChordEvents(currentQuestion).forEach(ev => {
-      t(ev.at, getFreq(ev.root - 12 + ko), '1.1');
+      t(ev.at, getFreq(ev.bass + ko), '1.1');
       ev.chord.map(s => getFreq(s + ko)).forEach(f => t(ev.at, f, '0.95'));
     });
   } else if (currentMode === 'escalas') {
@@ -2408,11 +2410,12 @@ async function playSound() {
 // Función armónica: cadencia de contexto, pausa y acorde objetivo
 function progChordEvents(q) {
   if (q.func) {
-    const evs = q.cadence.chords.map((ch, i) => ({ chord: ch, root: q.cadence.roots[i], at: i * 1100 }));
-    evs.push({ chord: q.target.chord, root: q.target.root, at: q.cadence.chords.length * 1100 + 700 });
+    const evs = q.cadence.chords.map((ch, i) => ({ chord: ch, bass: q.cadence.roots[i] - 12, at: i * 1100 }));
+    const tg = q.target;
+    evs.push({ chord: tg.chord, bass: tg.bass !== undefined ? tg.bass : tg.root - 12, at: q.cadence.chords.length * 1100 + 700 });
     return evs;
   }
-  return q.chords.map((ch, ci) => ({ chord: ch, root: q.roots ? q.roots[ci] : ch[0], at: ci * 1100 }));
+  return q.chords.map((ch, ci) => ({ chord: ch, bass: (q.roots ? q.roots[ci] : ch[0]) - 12, at: ci * 1100 }));
 }
 
 // ==================== PREGUNTAS ====================
