@@ -920,7 +920,10 @@ const ui = {
       progModeTitle:'🎼 Ejercicio:',progModeId:'Identificar progresión',progModeFunc:'Función armónica',
       regTitle:'🎹 Registro:',regLow:'Grave (C3)',regMid:'Medio (C4)',regHigh:'Agudo (C5)',
       funcSelTitle:'📋 Funciones a identificar:',funcKeyTitle:'🎼 Modo:',
-      funcHint:'Escucharás una cadencia como contexto y luego un acorde: ¿qué función tiene?'
+      funcHint:'Escucharás una cadencia como contexto y luego un acorde: ¿qué función tiene?',
+      funcUnlockTitle:'🔓 ¡Función Desbloqueada!',
+      funcUnlockBody:(name)=>`Ya puedes practicar <strong>${name}</strong> en Función Armónica.`,
+      funcUnlockBtn:'¡A practicar!'
     },
     notasRef:'🔔 Escucharás primero una <strong style="color:var(--warning)">nota de referencia</strong>, luego la nota a identificar',
     notasNoRef:'🔕 Sin referencia — identifica la nota directamente',
@@ -1024,7 +1027,10 @@ const ui = {
       progModeTitle:'🎼 Exercise:',progModeId:'Identify progression',progModeFunc:'Harmonic function',
       regTitle:'🎹 Register:',regLow:'Low (C3)',regMid:'Mid (C4)',regHigh:'High (C5)',
       funcSelTitle:'📋 Functions to identify:',funcKeyTitle:'🎼 Mode:',
-      funcHint:'You will hear a cadence as context and then a chord: what is its function?'
+      funcHint:'You will hear a cadence as context and then a chord: what is its function?',
+      funcUnlockTitle:'🔓 Function Unlocked!',
+      funcUnlockBody:(name)=>`You can now practice <strong>${name}</strong> in Harmonic Function.`,
+      funcUnlockBtn:'Keep practicing!'
     },
     notasRef:'🔔 You will first hear a <strong style="color:var(--warning)">reference note</strong>, then the note to identify',
     notasNoRef:'🔕 No reference — identify the note directly',
@@ -1326,12 +1332,15 @@ const musicData = {
 // `bass` (opcional) fija el bajo una octava abajo cuando la raíz normal daría un salto de 8-9 semitonos.
 const harmonicFunctions = {
   names: ['Tónica','Subdominante','Dominante'],
+  // Funciones activas por defecto para un usuario nuevo; el resto se desbloquea (ver checkFuncAutoUnlock).
+  defaultUnlocked: ['Tónica','Dominante'],
   major: {
     cadence: { roots:[0,5,7,0], chords:[[0,4,7],[0,5,9],[-1,2,7],[0,4,7]] },
     targets: {
       'Tónica':       [ {root:0, chord:[0,4,7]}, {root:9, bass:-15, chord:[0,4,9]} ],
       'Subdominante': [ {root:5, chord:[0,5,9]}, {root:2, chord:[-3,2,5]} ],
-      'Dominante':    [ {root:7, chord:[2,7,11]} ]
+      // V, viiº (dim, root doblada) y viiø7 (m7b5): comparten función por el tritono 3-7 de V
+      'Dominante':    [ {root:7, chord:[2,7,11]}, {root:11, bass:-13, chord:[2,5,11]}, {root:11, bass:-13, chord:[-3,2,5]} ]
     }
   },
   minor: {
@@ -1339,7 +1348,8 @@ const harmonicFunctions = {
     targets: {
       'Tónica':       [ {root:0, chord:[0,3,7]}, {root:3, chord:[-2,3,7]} ],
       'Subdominante': [ {root:5, chord:[0,5,8]}, {root:8, bass:-16, chord:[0,3,8]} ],
-      'Dominante':    [ {root:7, chord:[-1,2,7]}, {root:7, chord:[2,7,11]} ]
+      // V (sensible), viiº y viiº7 (disminuido completo, propio de la sensible alterada en menor)
+      'Dominante':    [ {root:7, chord:[-1,2,7]}, {root:7, chord:[2,7,11]}, {root:11, bass:-13, chord:[2,5,11]}, {root:11, bass:-13, chord:[2,5,8]} ]
     }
   }
 };
@@ -1355,7 +1365,7 @@ const customSettings = {
   septimas:    { selected: musicData.septimas.map(x => x.name), harmonic:true, arpeggio:false },
   progresiones:{
     selected: musicData.progresiones.map(x => x.name),
-    funcMode:false, funcSel: [...harmonicFunctions.names], funcMajor:true, funcMinor:false,
+    funcMode:false, funcSel: [...harmonicFunctions.defaultUnlocked], funcMajor:true, funcMinor:false,
     regLow:false, regMid:true, regHigh:false
   },
   escalas:     { selected: musicData.escalas.map(x => x.name) },
@@ -1499,6 +1509,7 @@ async function initAudio() {
   await Tone.start();
   audioReady = true;
   loadProgress();
+  loadFuncState();
   document.getElementById('startOverlay').style.display = 'none';
   document.getElementById('tutorialOverlay').style.display = 'none';
   updateStaticText();
@@ -2114,7 +2125,7 @@ function updateSettingsPanel() {
       <div class="settings-section">
         <h4>${sg.funcSelTitle}</h4>
         <div class="toggle-group">
-          ${harmonicFunctions.names.map(n => `<button class="toggle-btn ${sp.funcSel.includes(n)?'active':''}" onclick="toggleFuncSel('${n}')">${dn(n)}</button>`).join('')}
+          ${harmonicFunctions.names.map(n => `<button class="toggle-btn ${sp.funcSel.includes(n)?'active':''}" onclick="toggleFuncSel('${n}')">${funcState.unlocked.includes(n)?'':'🔒 '}${dn(n)}</button>`).join('')}
         </div>
       </div>
       <div class="settings-section">
@@ -2193,9 +2204,15 @@ function setProgFuncMode(on) {
   updateSettingsPanel(); nextQuestion(false);
 }
 function toggleFuncSel(name) {
-  const arr = customSettings.progresiones.funcSel;
+  const arr = customSettings.progresiones.funcSel; // === funcState.active (misma referencia)
   const i = arr.indexOf(name);
-  if (i > -1) { if (arr.length > 1) arr.splice(i,1); } else arr.push(name);
+  if (i > -1) {
+    if (arr.length > 2) arr.splice(i, 1); // mínimo 2 funciones activas: el ejercicio no tiene sentido con 1
+  } else {
+    arr.push(name);
+    if (!funcState.unlocked.includes(name)) funcState.unlocked.push(name); // activación manual = desbloqueo, sin modal
+  }
+  saveFuncState();
   updateSettingsPanel(); nextQuestion(false);
 }
 function toggleProgReg(r) {
@@ -2468,6 +2485,72 @@ function progPlaceQuestion(q) {
   q.keyOffset = keys[Math.floor(Math.random() * keys.length)];
 }
 
+// ==================== FUNCIÓN ARMÓNICA: desbloqueo progresivo ====================
+// funcState.active: funciones que se están practicando ahora (subconjunto de unlocked, mínimo 2)
+// funcState.unlocked: funciones alguna vez desbloqueadas (automático por desempeño, o manual al activarlas)
+// funcState.attempts: historial reciente {correct, setKey} para evaluar el 90%/15 intentos por combinación de activas
+let funcState = { active: [...harmonicFunctions.defaultUnlocked], unlocked: [...harmonicFunctions.defaultUnlocked], attempts: [] };
+function loadFuncState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('audikus_funciones_activas') || 'null');
+    if (saved && Array.isArray(saved.active) && saved.active.length) {
+      funcState = {
+        active: saved.active.filter(n => harmonicFunctions.names.includes(n)),
+        unlocked: Array.isArray(saved.unlocked) ? saved.unlocked.filter(n => harmonicFunctions.names.includes(n)) : [],
+        attempts: Array.isArray(saved.attempts) ? saved.attempts.slice(-300) : []
+      };
+    }
+  } catch(e) {}
+  // Defensivo: lo desbloqueado por defecto siempre debe estarlo, y siempre deben quedar >= 2 activas
+  harmonicFunctions.defaultUnlocked.forEach(n => { if (!funcState.unlocked.includes(n)) funcState.unlocked.push(n); });
+  if (funcState.active.length < 2) funcState.active = [...harmonicFunctions.defaultUnlocked];
+  customSettings.progresiones.funcSel = funcState.active;
+}
+function saveFuncState() {
+  try { localStorage.setItem('audikus_funciones_activas', JSON.stringify(funcState)); } catch(e) {}
+}
+function progFuncActiveKey() {
+  return [...customSettings.progresiones.funcSel].sort().join(',');
+}
+function recordFuncAttempt(isCorrect) {
+  funcState.attempts.push({ correct: isCorrect, setKey: progFuncActiveKey() });
+  if (funcState.attempts.length > 300) funcState.attempts = funcState.attempts.slice(-300);
+  saveFuncState();
+  checkFuncAutoUnlock();
+}
+function checkFuncAutoUnlock() {
+  const next = harmonicFunctions.names.find(n => !funcState.unlocked.includes(n));
+  if (!next) return;
+  const key = progFuncActiveKey();
+  const recent = funcState.attempts.filter(a => a.setKey === key).slice(-15);
+  if (recent.length < 15) return;
+  const correctCount = recent.filter(a => a.correct).length;
+  if (correctCount / 15 < 0.9) return;
+  funcState.unlocked.push(next);
+  if (!customSettings.progresiones.funcSel.includes(next)) customSettings.progresiones.funcSel.push(next);
+  saveFuncState();
+  showFuncUnlockModal(next);
+  if (currentMode === 'progresiones' && customSettings.progresiones.funcMode) updateSettingsPanel();
+}
+function showFuncUnlockModal(name) {
+  fireConfetti();
+  const existing = document.getElementById('funcUnlockModal');
+  if (existing) existing.remove();
+  const L = ui[currentLang].sGen;
+  const modal = document.createElement('div');
+  modal.id = 'funcUnlockModal';
+  modal.className = 'milestone-modal-bg';
+  modal.innerHTML = `
+    <div class="milestone-modal">
+      <div style="width:72px;height:72px;margin:0 auto 14px;border-radius:50%;border:2.5px solid var(--primary);background:rgba(108,99,255,0.18);display:grid;place-items:center;font-size:32px;">🔓</div>
+      <div style="font-size:13px;color:var(--primary);font-weight:800;letter-spacing:.04em;margin-bottom:4px;">${L.funcUnlockTitle}</div>
+      <div style="font-size:15px;line-height:1.5;margin-bottom:20px;">${L.funcUnlockBody(dn(name))}</div>
+      <button onclick="document.getElementById('funcUnlockModal').remove()" style="background:var(--primary);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">${L.funcUnlockBtn}</button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
 // ==================== PREGUNTAS ====================
 function nextQuestion(autoPlay = true) {
   let options = [], correctIndex = 0;
@@ -2668,6 +2751,9 @@ function checkAnswer(selected, correct, btn) {
       fb.textContent = `${tx('feedbackIncorrect')} ${dn(correctName)}`;
       fb.className = 'feedback incorrect';
     }
+  }
+  if (currentMode === 'progresiones' && currentQuestion && currentQuestion.func) {
+    recordFuncAttempt(selected === correct);
   }
   updateScoreboard();
   nextQTimer = setTimeout(() => { nextQTimer = null; nextQuestion(); }, 2800);
