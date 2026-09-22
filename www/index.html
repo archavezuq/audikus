@@ -1115,8 +1115,10 @@ const termEN = {
   'Tónica':'Tonic','Subdominante':'Subdominant','Dominante':'Dominant',
   'Dominante secundaria':'Secondary Dominant',
   'Mediante':'Mediant',
+  'Subdominante menor':'Minor Subdominant',
   'ii - V/V - V - I (Mayor)':'ii - V/V - V - I (Major)',
-  'I - iii - vi - IV - V (Mayor)':'I - iii - vi - IV - V (Major)'
+  'I - iii - vi - IV - V (Mayor)':'I - iii - vi - IV - V (Major)',
+  'I - IV - iv - I (Mayor)':'I - IV - iv - I (Major)'
 };
 function dn(name) { return currentLang==='es' ? name : (termEN[name]||name); }
 
@@ -1293,6 +1295,9 @@ const musicData = {
     { name:'I - iii - vi - IV - V (Mayor)', roots:[0,4,9,5,7], chords:[[0,4,7],[-1,4,7],[0,4,9],[0,5,9],[-1,2,7]] },
     // I→IV: C común + 2 suben; IV→I: C común + 2 bajan
     { name:'I - IV - I (Mayor)',        roots:[0,5,0],    chords:[[0,4,7],[0,5,9],[0,4,7]] },
+    // IV→iv: préstamo modal, A baja a Ab (bajo y demás voces comunes/estáticos); iv→I: bajo baja 4ta,
+    // Ab (b6 prestado) resuelve por grado a G (5to de I) — resolución característica del acorde prestado
+    { name:'I - IV - iv - I (Mayor)',   roots:[0,5,5,0],  chords:[[0,4,7],[0,5,9],[0,5,8],[0,4,7]] },
     // I→V: G común + C y E bajan; V→I: G común + B y D suben
     { name:'I - V - I (Mayor)',         roots:[0,7,0],    chords:[[0,4,7],[-1,2,7],[0,4,7]] },
     // i→iv: C común + 2 suben; iv→V (V mayor, con sensible): bajo sube y voces bajan; V→i: sensible sube a la tónica, G común
@@ -1342,7 +1347,7 @@ const musicData = {
 // Cada objetivo se conduce desde el último acorde de la cadencia con saltos de <= 4 semitonos por voz;
 // `bass` (opcional) fija el bajo una octava abajo cuando la raíz normal daría un salto de 8-9 semitonos.
 const harmonicFunctions = {
-  names: ['Tónica','Subdominante','Dominante','Dominante secundaria','Mediante'],
+  names: ['Tónica','Subdominante','Dominante','Dominante secundaria','Mediante','Subdominante menor'],
   // Funciones activas por defecto para un usuario nuevo; el resto se desbloquea (ver checkFuncAutoUnlock).
   defaultUnlocked: ['Tónica','Dominante'],
   major: {
@@ -1361,7 +1366,9 @@ const harmonicFunctions = {
       // V/V: alteración cromática de ii (F->F#), ver 'ii - V/V - V - I (Mayor)' en musicData.progresiones
       'Dominante secundaria': [ {root:2, chord:[2,6,9]} ],
       // vi y iii: mediantes diatónicas, sustitutos de tónica sin alteración cromática (ver [[harmony-expert-review]])
-      'Mediante':     [ {root:9, bass:-15, chord:[0,4,9]}, {root:4, bass:-8, chord:[-1,4,7]} ]
+      'Mediante':     [ {root:9, bass:-15, chord:[0,4,9]}, {root:4, bass:-8, chord:[-1,4,7]} ],
+      // iv prestado del menor paralelo (préstamo modal); I->iv directo ya es limpio, no necesita cadencia propia
+      'Subdominante menor': [ {root:5, chord:[0,5,8]} ]
     }
   },
   minor: {
