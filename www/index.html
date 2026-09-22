@@ -1112,7 +1112,9 @@ const termEN = {
   'Semidisminuido':'Half-Diminished','Disminuido 7ma':'Diminished 7th',
   'Dórica':'Dorian','Mixolidio':'Mixolydian',
   'Sus2':'Sus2','Sus4':'Sus4',
-  'Tónica':'Tonic','Subdominante':'Subdominant','Dominante':'Dominant'
+  'Tónica':'Tonic','Subdominante':'Subdominant','Dominante':'Dominant',
+  'Dominante secundaria':'Secondary Dominant',
+  'ii - V/V - V - I (Mayor)':'ii - V/V - V - I (Major)'
 };
 function dn(name) { return currentLang==='es' ? name : (termEN[name]||name); }
 
@@ -1278,6 +1280,9 @@ const musicData = {
     { name:'I - V - vi - IV (Mayor)',   roots:[0,7,9,5],  chords:[[0,4,7],[2,7,11],[0,4,12],[0,5,9]] },
     // ii→V: D común + 2 suben; V→I: E sube, G común, B sube semitono
     { name:'ii - V - I (Mayor)',        roots:[2,7,0],    chords:[[2,5,9],[2,7,11],[4,7,12]] },
+    // ii→V/V: alteración cromática, D y A comunes, solo F sube a F# (sensible secundaria);
+    // V/V→V: D común, F# resuelve a G; V→I: igual que en ii-V-I
+    { name:'ii - V/V - V - I (Mayor)',  roots:[2,2,7,0],  chords:[[2,5,9],[2,6,9],[2,7,11],[4,7,12]] },
     // I→vi: 2 comunes + G sube; vi→IV: 2 comunes + E sube; IV→V: 3 voces suben por tono
     // (IV→V: bajo sube, voces superiores bajan en mov. contrario)
     { name:'I - vi - IV - V (Mayor)',   roots:[0,9,5,7],  chords:[[0,4,7],[0,4,9],[0,5,9],[-1,2,7]] },
@@ -1332,16 +1337,24 @@ const musicData = {
 // Cada objetivo se conduce desde el último acorde de la cadencia con saltos de <= 4 semitonos por voz;
 // `bass` (opcional) fija el bajo una octava abajo cuando la raíz normal daría un salto de 8-9 semitonos.
 const harmonicFunctions = {
-  names: ['Tónica','Subdominante','Dominante'],
+  names: ['Tónica','Subdominante','Dominante','Dominante secundaria'],
   // Funciones activas por defecto para un usuario nuevo; el resto se desbloquea (ver checkFuncAutoUnlock).
   defaultUnlocked: ['Tónica','Dominante'],
   major: {
     cadence: { roots:[0,5,7,0], chords:[[0,4,7],[0,5,9],[-1,2,7],[0,4,7]] },
+    // Cadencias específicas por función, cuando no conviene reutilizar la cadencia genérica de arriba.
+    cadenceByFunction: {
+      // I-IV-ii: IV y ii comparten F y A (solo el bajo se mueve), preparando el oído con el ii diatónico
+      // justo antes de aislar su alteración cromática (V/V). I->ii directo daba 5as/8as paralelas.
+      'Dominante secundaria': { roots:[0,5,2], chords:[[0,4,7],[0,5,9],[2,5,9]] }
+    },
     targets: {
       'Tónica':       [ {root:0, chord:[0,4,7]} ],
       'Subdominante': [ {root:5, chord:[0,5,9]}, {root:2, chord:[-3,2,5]} ],
       // V, viiº (dim, root doblada) y viiø7 (m7b5): comparten función por el tritono 3-7 de V
-      'Dominante':    [ {root:7, chord:[2,7,11]}, {root:11, bass:-13, chord:[2,5,11]}, {root:11, bass:-13, chord:[-3,2,5]} ]
+      'Dominante':    [ {root:7, chord:[2,7,11]}, {root:11, bass:-13, chord:[2,5,11]}, {root:11, bass:-13, chord:[-3,2,5]} ],
+      // V/V: alteración cromática de ii (F->F#), ver 'ii - V/V - V - I (Mayor)' en musicData.progresiones
+      'Dominante secundaria': [ {root:2, chord:[2,6,9]} ]
     }
   },
   minor: {
@@ -2651,16 +2664,25 @@ function nextQuestion(autoPlay = true) {
     const pc = document.querySelector('.play-controls');
     if (pc) pc.style.display = '';
     const sp = customSettings.progresiones;
-    options = harmonicFunctions.names.filter(n => sp.funcSel.includes(n)).map(n => ({ name: n }));
-    if (!options.length) { alert('Selecciona al menos una función'); return; }
-    correctIndex = Math.floor(Math.random() * options.length);
     const keys = [];
     if (sp.funcMajor) keys.push('major');
     if (sp.funcMinor) keys.push('minor');
-    const data = harmonicFunctions[keys[Math.floor(Math.random() * keys.length)]];
-    const opts = data.targets[options[correctIndex].name];
+    // Una función solo es preguntable en los modos (mayor/menor) donde tiene acordes objetivo definidos
+    // (p.ej. Dominante secundaria por ahora solo existe en mayor — ver harmonicFunctions.minor.targets)
+    const hasTargets = (name, k) => harmonicFunctions[k].targets[name] && harmonicFunctions[k].targets[name].length;
+    options = harmonicFunctions.names
+      .filter(n => sp.funcSel.includes(n))
+      .filter(n => keys.some(k => hasTargets(n, k)))
+      .map(n => ({ name: n }));
+    if (!options.length) { alert('Selecciona al menos una función'); return; }
+    correctIndex = Math.floor(Math.random() * options.length);
+    const funcName = options[correctIndex].name;
+    const availableKeys = keys.filter(k => hasTargets(funcName, k));
+    const data = harmonicFunctions[availableKeys[Math.floor(Math.random() * availableKeys.length)]];
+    const opts = data.targets[funcName];
     currentQuestion = {
-      name: options[correctIndex].name, func: true, cadence: data.cadence,
+      name: funcName, func: true,
+      cadence: (data.cadenceByFunction && data.cadenceByFunction[funcName]) || data.cadence,
       target: opts[Math.floor(Math.random() * opts.length)],
       keyOffset: Math.floor(Math.random() * 12)
     };
