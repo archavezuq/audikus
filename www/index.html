@@ -1114,7 +1114,9 @@ const termEN = {
   'Sus2':'Sus2','Sus4':'Sus4',
   'Tónica':'Tonic','Subdominante':'Subdominant','Dominante':'Dominant',
   'Dominante secundaria':'Secondary Dominant',
-  'ii - V/V - V - I (Mayor)':'ii - V/V - V - I (Major)'
+  'Mediante':'Mediant',
+  'ii - V/V - V - I (Mayor)':'ii - V/V - V - I (Major)',
+  'I - iii - vi - IV - V (Mayor)':'I - iii - vi - IV - V (Major)'
 };
 function dn(name) { return currentLang==='es' ? name : (termEN[name]||name); }
 
@@ -1286,6 +1288,9 @@ const musicData = {
     // I→vi: 2 comunes + G sube; vi→IV: 2 comunes + E sube; IV→V: 3 voces suben por tono
     // (IV→V: bajo sube, voces superiores bajan en mov. contrario)
     { name:'I - vi - IV - V (Mayor)',   roots:[0,9,5,7],  chords:[[0,4,7],[0,4,9],[0,5,9],[-1,2,7]] },
+    // I→iii: E y G comunes, solo C baja a B (mediante, sin cromatismo); iii→vi: E común, resto por grado;
+    // vi→IV y IV→V: iguales a 'I - vi - IV - V'
+    { name:'I - iii - vi - IV - V (Mayor)', roots:[0,4,9,5,7], chords:[[0,4,7],[-1,4,7],[0,4,9],[0,5,9],[-1,2,7]] },
     // I→IV: C común + 2 suben; IV→I: C común + 2 bajan
     { name:'I - IV - I (Mayor)',        roots:[0,5,0],    chords:[[0,4,7],[0,5,9],[0,4,7]] },
     // I→V: G común + C y E bajan; V→I: G común + B y D suben
@@ -1337,7 +1342,7 @@ const musicData = {
 // Cada objetivo se conduce desde el último acorde de la cadencia con saltos de <= 4 semitonos por voz;
 // `bass` (opcional) fija el bajo una octava abajo cuando la raíz normal daría un salto de 8-9 semitonos.
 const harmonicFunctions = {
-  names: ['Tónica','Subdominante','Dominante','Dominante secundaria'],
+  names: ['Tónica','Subdominante','Dominante','Dominante secundaria','Mediante'],
   // Funciones activas por defecto para un usuario nuevo; el resto se desbloquea (ver checkFuncAutoUnlock).
   defaultUnlocked: ['Tónica','Dominante'],
   major: {
@@ -1354,7 +1359,9 @@ const harmonicFunctions = {
       // V, viiº (dim, root doblada) y viiø7 (m7b5): comparten función por el tritono 3-7 de V
       'Dominante':    [ {root:7, chord:[2,7,11]}, {root:11, bass:-13, chord:[2,5,11]}, {root:11, bass:-13, chord:[-3,2,5]} ],
       // V/V: alteración cromática de ii (F->F#), ver 'ii - V/V - V - I (Mayor)' en musicData.progresiones
-      'Dominante secundaria': [ {root:2, chord:[2,6,9]} ]
+      'Dominante secundaria': [ {root:2, chord:[2,6,9]} ],
+      // vi y iii: mediantes diatónicas, sustitutos de tónica sin alteración cromática (ver [[harmony-expert-review]])
+      'Mediante':     [ {root:9, bass:-15, chord:[0,4,9]}, {root:4, bass:-8, chord:[-1,4,7]} ]
     }
   },
   minor: {
@@ -1363,7 +1370,10 @@ const harmonicFunctions = {
       'Tónica':       [ {root:0, chord:[0,3,7]} ],
       'Subdominante': [ {root:5, chord:[0,5,8]}, {root:8, bass:-16, chord:[0,3,8]} ],
       // V (sensible), viiº y viiº7 (disminuido completo, propio de la sensible alterada en menor)
-      'Dominante':    [ {root:7, chord:[-1,2,7]}, {root:7, chord:[2,7,11]}, {root:11, bass:-13, chord:[2,5,11]}, {root:11, bass:-13, chord:[2,5,8]} ]
+      'Dominante':    [ {root:7, chord:[-1,2,7]}, {root:7, chord:[2,7,11]}, {root:11, bass:-13, chord:[2,5,11]}, {root:11, bass:-13, chord:[2,5,8]} ],
+      // III: mediante relativa (relativo mayor), sustituto de tónica en menor. VI queda solo en
+      // Subdominante (su rol de preparación V-iv-V es el uso más común en textbook, ver [[harmony-expert-review]])
+      'Mediante':     [ {root:3, chord:[-2,3,7]} ]
     }
   }
 };
