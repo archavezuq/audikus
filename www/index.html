@@ -1117,10 +1117,14 @@ const termEN = {
   'Mediante':'Mediant',
   'Subdominante menor':'Minor Subdominant',
   'Napolitana':'Neapolitan',
+  'Sexta Aumentada':'Augmented Sixth',
   'ii - V/V - V - I (Mayor)':'ii - V/V - V - I (Major)',
   'I - iii - vi - IV - V (Mayor)':'I - iii - vi - IV - V (Major)',
   'I - IV - iv - I (Mayor)':'I - IV - iv - I (Major)',
-  'i - iv - N6 - V - i (Menor)':'i - iv - N6 - V - i (Minor)'
+  'i - iv - N6 - V - i (Menor)':'i - iv - N6 - V - i (Minor)',
+  'i - iv - It+6 - V - i (Menor)':'i - iv - It+6 - V - i (Minor)',
+  'i - iv - Fr+6 - V - i (Menor)':'i - iv - Fr+6 - V - i (Minor)',
+  'i - iv - Ger+6 - I6/4 - V - i (Menor)':'i - iv - Ger+6 - I6/4 - V - i (Minor)'
 };
 function dn(name) { return currentLang==='es' ? name : (termEN[name]||name); }
 
@@ -1309,7 +1313,17 @@ const musicData = {
     // N6→V: bajo sube por grado, Db (nota napolitana) baja a B (sensible); V→i: igual que en 'i - iv - V - i'
     { name:'i - iv - N6 - V - i (Menor)', roots:[0,5,5,7,0], chords:[[0,3,7],[0,5,8],[-4,1,8],[-1,2,7],[0,3,7]] },
     // i→VI: C y Eb comunes + G sube; VI→III: Eb común + 2 bajan; III→VII: Bb común + 2 bajan
-    { name:'i - VI - III - VII (Menor)',roots:[0,8,3,10], chords:[[0,3,7],[0,3,8],[-2,3,7],[-2,2,5]] }
+    { name:'i - VI - III - VII (Menor)',roots:[0,8,3,10], chords:[[0,3,7],[0,3,8],[-2,3,7],[-2,2,5]] },
+    // iv→It+6: C y Ab comunes, F sube a F# (doblando la tónica Do, no el bajo — evita 8as paralelas);
+    // It+6→V: Ab(bajo) baja a Sol, F# sube a Sol (resolución característica hacia el unísono/8va)
+    { name:'i - iv - It+6 - V - i (Menor)', roots:[0,5,8,7,0], chords:[[0,3,7],[0,5,8],[0,6,12],[-1,7,14],[0,7,12]] },
+    // iv→Fr+6: Do común, Re ya anticipa el V (queda como nota común); Fr+6→V: reutiliza el voicing de V
+    // ya existente en la app — Re común, Ab baja y F# sube a Sol
+    { name:'i - iv - Fr+6 - V - i (Menor)', roots:[0,5,8,7,0], chords:[[0,3,7],[0,5,8],[0,2,6],[-1,2,7],[0,3,7]] },
+    // iv→Ger+6: Do y Mib comunes, F sube a F#. Ger+6→V directo da 5as paralelas (el error clásico de
+    // manual) — se resuelve vía cadencial 6/4 (mismo bajo que V): Ger+6→I6/4→V, con la 6ª y 4ª
+    // bajando por grado a la 5ª y 3ª de V, la resolución "64-53" característica de toda cadencia.
+    { name:'i - iv - Ger+6 - I6/4 - V - i (Menor)', roots:[0,5,8,7,7,0], chords:[[0,3,7],[0,5,8],[0,3,6],[0,3,7],[-1,2,7],[0,3,7]] }
   ],
   notas: [
     { name:'Do',     semitones:0  }, { name:'Do♯',    semitones:1  },
@@ -1353,7 +1367,7 @@ const musicData = {
 // Cada objetivo se conduce desde el último acorde de la cadencia con saltos de <= 4 semitonos por voz;
 // `bass` (opcional) fija el bajo una octava abajo cuando la raíz normal daría un salto de 8-9 semitonos.
 const harmonicFunctions = {
-  names: ['Tónica','Subdominante','Dominante','Dominante secundaria','Mediante','Subdominante menor','Napolitana'],
+  names: ['Tónica','Subdominante','Dominante','Dominante secundaria','Mediante','Subdominante menor','Napolitana','Sexta Aumentada'],
   // Funciones activas por defecto para un usuario nuevo; el resto se desbloquea (ver checkFuncAutoUnlock).
   defaultUnlocked: ['Tónica','Dominante'],
   major: {
@@ -1379,6 +1393,10 @@ const harmonicFunctions = {
   },
   minor: {
     cadence: { roots:[0,5,7,0], chords:[[0,3,7],[0,5,8],[-1,2,7],[0,3,7]] },
+    cadenceByFunction: {
+      // i-iv: las 3 sextas aumentadas comparten raíz con iv (su bajo es siempre ♭6, ya presente en iv)
+      'Sexta Aumentada': { roots:[0,5], chords:[[0,3,7],[0,5,8]] }
+    },
     targets: {
       'Tónica':       [ {root:0, chord:[0,3,7]} ],
       'Subdominante': [ {root:5, chord:[0,5,8]}, {root:8, bass:-16, chord:[0,3,8]} ],
@@ -1389,7 +1407,12 @@ const harmonicFunctions = {
       'Mediante':     [ {root:3, chord:[-2,3,7]} ],
       // Napolitana (bII, casi siempre en 1a inversión N6): bajo en Fa (igual que iv), doblando la 5a
       // (Ab), no el bajo — doblar el bajo da 8as paralelas al resolver a V. i->N6 directo ya es limpio.
-      'Napolitana':   [ {root:1, bass:-7, chord:[-4,1,8]} ]
+      'Napolitana':   [ {root:1, bass:-7, chord:[-4,1,8]} ],
+      // Sexta aumentada (Italiana/Francesa/Alemana): bajo en ♭6 (root=8, bass=-4 por defecto), las 3
+      // conectan limpio desde iv (comparten C; solo se altera F->F#, y en Fr/Ger también Ab/Eb).
+      // La Alemana resolviendo directo a V da 5as paralelas — ver 'i - iv - Ger+6 - I6/4 - V - i (Menor)'
+      // en musicData.progresiones para la resolución correcta vía cadencial 6/4.
+      'Sexta Aumentada': [ {root:8, chord:[0,6,12]}, {root:8, chord:[0,2,6]}, {root:8, chord:[0,3,6]} ]
     }
   }
 };
@@ -3553,7 +3576,7 @@ function getResponse(question) {
   const n = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
   const q = n(question);
   const has = (...w) => w.some(x => q.includes(n(x)));
-  const musicWords = ['interval','acorde','escala','progresion','intervalo','tonica','dominante','cadencia','modo','triada','septima','inversion','pentatonica','blues','jazz','rock','nota','semitono','tono','octava','quinta','cuarta','tercera','segunda','sexta','septima','mayor','menor','disminuido','aumentado','armonico','melodico','ritmo','compas','tiempo','armonia','consonancia','disonancia','sus2','sus4','dim','maj','consejo','oido','estudiar','practicar','altura','agudo','grave','entonacion','entonación','afinar','afinacion','voz','voces','circulo','quintas','arpegio','absoluto','relativo','transponer','transposicion','frigio','lidio','mixolidio','locrio','pulso','funcion','enharmon','modulacion','conduccion','cromatica','cromatico','jonico','eolio','contrapunto','mediante','secundaria','prestado','prestada','prestamo','v/v','napolitana','n6'];
+  const musicWords = ['interval','acorde','escala','progresion','intervalo','tonica','dominante','cadencia','modo','triada','septima','inversion','pentatonica','blues','jazz','rock','nota','semitono','tono','octava','quinta','cuarta','tercera','segunda','sexta','septima','mayor','menor','disminuido','aumentado','armonico','melodico','ritmo','compas','tiempo','armonia','consonancia','disonancia','sus2','sus4','dim','maj','consejo','oido','estudiar','practicar','altura','agudo','grave','entonacion','entonación','afinar','afinacion','voz','voces','circulo','quintas','arpegio','absoluto','relativo','transponer','transposicion','frigio','lidio','mixolidio','locrio','pulso','funcion','enharmon','modulacion','conduccion','cromatica','cromatico','jonico','eolio','contrapunto','mediante','secundaria','prestado','prestada','prestamo','v/v','napolitana','n6','it+6','fr+6','ger+6'];
   if (!musicWords.some(w => q.includes(w))) return ui.es.chatOffTopic;
 
   // Definiciones generales
@@ -3644,8 +3667,11 @@ function getResponse(question) {
   if (has('napolitana','sexta napolitana','acorde napolitano','n6'))
     return '🎼 <strong>Napolitana (♭II, o "N6")</strong><br><br>Un acorde <strong>mayor</strong> construido sobre el <strong>2º grado bajado</strong> (♭II) — en Do menor, Reb-Fa-Lab. Casi siempre se usa en <strong>primera inversión</strong> (de ahí "sexta napolitana"), con la <strong>3ª en el bajo</strong>.<br><br><strong>Por qué en 1ª inversión:</strong> la 3ª de Reb mayor es Fa — la misma nota que ya usa el bajo del <strong>iv</strong>. Eso hace que la Napolitana se conecte de forma muy suave: llega directo desde el acorde iv sin mover el bajo.<br><br><strong>Resolución:</strong> el Reb (la "nota napolitana") baja a la sensible; el bajo sube por grado hacia V.<br><br>Progresión típica: <strong>iv — N6 — V — i</strong>. Es función <strong>Subdominante</strong> intensificada — mismo lugar que iv, con un color mucho más oscuro y cromático. Muy común en música clásica, flamenca y de terror/suspenso. 🎭';
 
+  if (has('sexta aumentada','sexta italiana','sexta francesa','sexta alemana','it+6','fr+6','ger+6','it 6','fr 6','ger 6'))
+    return '🎼 <strong>Sextas Aumentadas (It+6 / Fr+6 / Ger+6)</strong><br><br>Tres acordes construidos sobre el <strong>♭6 en el bajo</strong>, con una <strong>6ª aumentada</strong> hacia el 4º grado elevado (♯4) — en Do menor, Lab (bajo) hasta Fa♯. Los dos extremos resuelven <strong>hacia afuera</strong>, al unísono/8ª de Sol (el ♭6 baja, el ♯4 sube) — la razón del nombre.<br><br><strong>Italiana:</strong> Lab — Do — Fa♯ (solo 3 notas, se dobla la tónica)<br><strong>Francesa:</strong> Lab — Do — Re — Fa♯ (agrega el 2º grado, que queda como nota común con el V siguiente)<br><strong>Alemana:</strong> Lab — Do — Mib — Fa♯ (agrega el ♭3 — enarmónicamente es un acorde de Dominante 7)<br><br><strong>⚠️ El error clásico:</strong> la Alemana resolviendo directo a V produce <strong>quintas paralelas</strong> (entre el bajo y el ♭3). La solución de manual: pasar primero por un <strong>6/4 cadencial</strong> (Ger+6 → I6/4 → V), que comparte el mismo bajo que V y evita el problema.<br><br>Las tres cumplen función <strong>Subdominante</strong> intensificada — se derivan del acorde iv, con la ♭6 ya presente y el 4º grado alterado a ♯4. 🎯';
+
   if (has('funcion tonal','función tonal','funcion armonica','función armónica','tonica dominante subdominante','T S D'))
-    return '🎼 <strong>Función Tonal</strong><br><br>Concepto sistematizado por Hugo Riemann (1893) que clasifica cada acorde de una tonalidad según su <strong>comportamiento funcional</strong> dentro de la jerarquía tonal, independientemente de su posición en la escala. Cada grado pertenece a una de estas regiones:<br><br><strong>🟢 Tónica (T)</strong> — reposo, punto de llegada y partida<br>&nbsp;&nbsp;→ <strong>I</strong> (el único grado realmente estable)<br><br><strong>🟡 Subdominante (S)</strong> — tensión moderada, se aleja de la tónica<br>&nbsp;&nbsp;→ <strong>ii</strong> y <strong>IV</strong> (diatónicos)<br>&nbsp;&nbsp;→ <strong>iv</strong> (prestado del modo menor paralelo — ver Subdominante Menor)<br>&nbsp;&nbsp;→ <strong>♭II/N6</strong> (napolitana — ver Napolitana)<br><br><strong>🔴 Dominante (D)</strong> — tensión máxima, exige resolver a la tónica<br>&nbsp;&nbsp;→ <strong>V</strong> y <strong>vii°/viiø7</strong> (diatónicos — comparten el mismo tritono)<br>&nbsp;&nbsp;→ <strong>V/V</strong> y otras dominantes secundarias (aplicadas a un grado que no es I — ver Dominante Secundaria)<br><br><strong>🔵 Mediante</strong> — sustituto de tónica más débil/coloreado, comparte 2 notas con I<br>&nbsp;&nbsp;→ <strong>iii</strong> y <strong>vi</strong> en mayor · <strong>III</strong> en menor (ver Mediante)<br><br><strong>Progresiones funcionales típicas:</strong><br>• Cadencia auténtica perfecta: D→T (V→I)<br>• Cadencia plagal: S→T (IV→I)<br>• Progresión ii–V–I: S→D→T (fundamental en jazz y armonía tonal clásica)<br>• Cadena de dominantes: S→D/D→D→T (ii→V/V→V→I, intensifica la llegada a D)<br><br>El movimiento funcional opera con mayor peso cuando hay resolución de disonancias (la séptima del dominante baja, la sensible sube). 🎯';
+    return '🎼 <strong>Función Tonal</strong><br><br>Concepto sistematizado por Hugo Riemann (1893) que clasifica cada acorde de una tonalidad según su <strong>comportamiento funcional</strong> dentro de la jerarquía tonal, independientemente de su posición en la escala. Cada grado pertenece a una de estas regiones:<br><br><strong>🟢 Tónica (T)</strong> — reposo, punto de llegada y partida<br>&nbsp;&nbsp;→ <strong>I</strong> (el único grado realmente estable)<br><br><strong>🟡 Subdominante (S)</strong> — tensión moderada, se aleja de la tónica<br>&nbsp;&nbsp;→ <strong>ii</strong> y <strong>IV</strong> (diatónicos)<br>&nbsp;&nbsp;→ <strong>iv</strong> (prestado del modo menor paralelo — ver Subdominante Menor)<br>&nbsp;&nbsp;→ <strong>♭II/N6</strong> (napolitana — ver Napolitana)<br>&nbsp;&nbsp;→ <strong>It+6/Fr+6/Ger+6</strong> (sextas aumentadas — ver Sexta Aumentada)<br><br><strong>🔴 Dominante (D)</strong> — tensión máxima, exige resolver a la tónica<br>&nbsp;&nbsp;→ <strong>V</strong> y <strong>vii°/viiø7</strong> (diatónicos — comparten el mismo tritono)<br>&nbsp;&nbsp;→ <strong>V/V</strong> y otras dominantes secundarias (aplicadas a un grado que no es I — ver Dominante Secundaria)<br><br><strong>🔵 Mediante</strong> — sustituto de tónica más débil/coloreado, comparte 2 notas con I<br>&nbsp;&nbsp;→ <strong>iii</strong> y <strong>vi</strong> en mayor · <strong>III</strong> en menor (ver Mediante)<br><br><strong>Progresiones funcionales típicas:</strong><br>• Cadencia auténtica perfecta: D→T (V→I)<br>• Cadencia plagal: S→T (IV→I)<br>• Progresión ii–V–I: S→D→T (fundamental en jazz y armonía tonal clásica)<br>• Cadena de dominantes: S→D/D→D→T (ii→V/V→V→I, intensifica la llegada a D)<br><br>El movimiento funcional opera con mayor peso cuando hay resolución de disonancias (la séptima del dominante baja, la sensible sube). 🎯';
 
   // Séptimas
   if (has('mayor 7','maj7') || (has('mayor') && has('septima') && !has('dominante')))
@@ -3780,7 +3806,7 @@ function getResponseEN(question) {
   const n = s => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
   const q = n(question);
   const has = (...w) => w.some(x => q.includes(n(x)));
-  const musicWords = ['interval','chord','scale','progression','tonic','dominant','cadence','mode','triad','seventh','inversion','pentatonic','blues','jazz','note','semitone','tone','octave','fifth','fourth','third','second','sixth','major','minor','diminished','augmented','harmonic','melodic','rhythm','harmony','consonance','dissonance','sus','dim','maj','tip','ear','study','practice','theory','pitch','high','low','intonation','tune','tuning','sing','voice','circle','fifths','arpeggio','absolute','relative','transpose','phrygian','lydian','mixolydian','locrian','pulse','meter','modulation','tonal','enharmonic','chromatic','ionian','aeolian','counterpoint','leading','function','mediant','secondary','borrowed','v/v','neapolitan','n6'];
+  const musicWords = ['interval','chord','scale','progression','tonic','dominant','cadence','mode','triad','seventh','inversion','pentatonic','blues','jazz','note','semitone','tone','octave','fifth','fourth','third','second','sixth','major','minor','diminished','augmented','harmonic','melodic','rhythm','harmony','consonance','dissonance','sus','dim','maj','tip','ear','study','practice','theory','pitch','high','low','intonation','tune','tuning','sing','voice','circle','fifths','arpeggio','absolute','relative','transpose','phrygian','lydian','mixolydian','locrian','pulse','meter','modulation','tonal','enharmonic','chromatic','ionian','aeolian','counterpoint','leading','function','mediant','secondary','borrowed','v/v','neapolitan','n6','it+6','fr+6','ger+6'];
   if (!musicWords.some(w => q.includes(w))) return ui.en.chatOffTopic;
 
   // General definitions
@@ -3833,7 +3859,10 @@ function getResponseEN(question) {
     return '🎹 <strong>Major Triad</strong><br><br>Structure: 1 — M3 — P5 &nbsp;|&nbsp; intervals: 0, 4, 7<br><br>• Bright and stable sound<br>• Example: C major = C-E-G';
   if (has('minor triad','minor chord') && !has('7th','seventh'))
     return '🎹 <strong>Minor Triad</strong><br><br>Structure: 1 — m3 — P5 &nbsp;|&nbsp; intervals: 0, 3, 7<br><br>• Dark and melancholic sound<br>• Example: A minor = A-C-E<br>• Only the third changes (4→3 semitones vs major)';
-  if (has('augmented'))
+  if (has('augmented sixth','italian sixth','french sixth','german sixth','it+6','fr+6','ger+6','it 6','fr 6','ger 6'))
+    return '🎼 <strong>Augmented Sixth Chords (It+6 / Fr+6 / Ger+6)</strong><br><br>Three chords built on <strong>♭6 in the bass</strong>, with an <strong>augmented 6th</strong> up to the raised 4th degree (♯4) — in C minor, Ab (bass) up to F♯. Both outer notes resolve <strong>outward</strong>, to the unison/octave on G (♭6 falls, ♯4 rises) — hence the name.<br><br><strong>Italian:</strong> Ab — C — F♯ (only 3 notes, the tonic is doubled)<br><strong>French:</strong> Ab — C — D — F♯ (adds the 2nd degree, which becomes a common tone with the following V)<br><strong>German:</strong> Ab — C — Eb — F♯ (adds the ♭3 — enharmonically a dominant 7th chord)<br><br><strong>⚠️ The classic trap:</strong> the German resolving straight to V produces <strong>parallel fifths</strong> (between the bass and the ♭3). The textbook fix: go through a <strong>cadential 6/4</strong> first (Ger+6 → I6/4 → V), which shares the same bass as V and avoids the problem.<br><br>All three carry an intensified <strong>Subdominant</strong> function — derived from iv, with ♭6 already present and the 4th degree altered up to ♯4. 🎯';
+
+  if (has('augmented') && !has('sixth','6th'))
     return '🎹 <strong>Augmented Chord</strong><br><br>Structure: 1 — M3 — A5 &nbsp;|&nbsp; intervals: 0, 4, 8<br><br>• Tense and unstable, symmetric<br>• Example: C+ = C-E-G♯<br>• Divides the octave into 3 equal major thirds';
   if (has('diminished') && !has('7th','seventh'))
     return '🎹 <strong>Diminished Chord</strong><br><br>Structure: 1 — m3 — d5 &nbsp;|&nbsp; intervals: 0, 3, 6<br><br>• Very tense, needs to resolve<br>• Example: B° = B-D-F<br>• Two stacked minor thirds';
@@ -3942,7 +3971,7 @@ function getResponseEN(question) {
     return '🎹 <strong>Enharmonics</strong><br><br>In <strong>equal temperament</strong>, enharmonic equivalents are two pitches sharing the same acoustic frequency but represented by different notational symbols. This phenomenon arises from the tension between the theoretical series of fifths (which generates an infinite spiral of distinct pitches) and the practical tuning system of twelve equal semitones (which closes that spiral).<br><br><strong>Primary equivalences:</strong><br>• C♯ = D♭ (same piano key)<br>• F♯ = G♭ &nbsp;• B = C♭ &nbsp;• E♯ = F<br><br><strong>Notational criterion:</strong> The choice between enharmonic spellings is not arbitrary — it is governed by harmonic context and implied melodic direction. Sharps signal ascending tendency; flats signal descending.<br><br><strong>Harmonic significance:</strong> Enharmonic equivalence is the basis of <em>enharmonic modulation</em>. By reinterpreting a chord\'s spelling, composers gain access to distantly related tonal areas. The fully diminished seventh chord is the principal vehicle: its symmetrical structure of stacked minor thirds allows reinterpretation as the leading-tone seventh of four different keys. 🎯';
 
   if (has('tonal function','function harmony','functional harmony','tonic dominant subdominant'))
-    return '🎼 <strong>Tonal Function</strong><br><br>A concept systematized by Hugo Riemann (1893) that classifies each chord in a key according to its <strong>functional behavior</strong> within the tonal hierarchy, regardless of its scalar position. Every degree belongs to one of these regions:<br><br><strong>🟢 Tonic (T)</strong> — rest, point of arrival and departure<br>&nbsp;&nbsp;→ <strong>I</strong> (the only truly stable degree)<br><br><strong>🟡 Subdominant (S)</strong> — moderate tension, moves away from the tonic<br>&nbsp;&nbsp;→ <strong>ii</strong> and <strong>IV</strong> (diatonic)<br>&nbsp;&nbsp;→ <strong>iv</strong> (borrowed from the parallel minor — see Minor Subdominant)<br>&nbsp;&nbsp;→ <strong>♭II/N6</strong> (Neapolitan — see Neapolitan)<br><br><strong>🔴 Dominant (D)</strong> — maximum tension, demands resolution to tonic<br>&nbsp;&nbsp;→ <strong>V</strong> and <strong>vii°/viiø7</strong> (diatonic — share the same tritone)<br>&nbsp;&nbsp;→ <strong>V/V</strong> and other secondary dominants (applied to a degree other than I — see Secondary Dominant)<br><br><strong>🔵 Mediant</strong> — a weaker, more colored tonic substitute, shares 2 notes with I<br>&nbsp;&nbsp;→ <strong>iii</strong> and <strong>vi</strong> in major · <strong>III</strong> in minor (see Mediant)<br><br><strong>Typical functional progressions:</strong><br>• Perfect authentic cadence: D→T (V→I)<br>• Plagal cadence: S→T (IV→I)<br>• ii–V–I progression: S→D→T (foundational in jazz and classical tonal harmony)<br>• Dominant chain: S→D/D→D→T (ii→V/V→V→I, intensifies the arrival on D)<br><br>Functional motion carries the greatest weight when dissonances resolve: the dominant seventh descends, the leading tone ascends. 🎯';
+    return '🎼 <strong>Tonal Function</strong><br><br>A concept systematized by Hugo Riemann (1893) that classifies each chord in a key according to its <strong>functional behavior</strong> within the tonal hierarchy, regardless of its scalar position. Every degree belongs to one of these regions:<br><br><strong>🟢 Tonic (T)</strong> — rest, point of arrival and departure<br>&nbsp;&nbsp;→ <strong>I</strong> (the only truly stable degree)<br><br><strong>🟡 Subdominant (S)</strong> — moderate tension, moves away from the tonic<br>&nbsp;&nbsp;→ <strong>ii</strong> and <strong>IV</strong> (diatonic)<br>&nbsp;&nbsp;→ <strong>iv</strong> (borrowed from the parallel minor — see Minor Subdominant)<br>&nbsp;&nbsp;→ <strong>♭II/N6</strong> (Neapolitan — see Neapolitan)<br>&nbsp;&nbsp;→ <strong>It+6/Fr+6/Ger+6</strong> (augmented sixths — see Augmented Sixth)<br><br><strong>🔴 Dominant (D)</strong> — maximum tension, demands resolution to tonic<br>&nbsp;&nbsp;→ <strong>V</strong> and <strong>vii°/viiø7</strong> (diatonic — share the same tritone)<br>&nbsp;&nbsp;→ <strong>V/V</strong> and other secondary dominants (applied to a degree other than I — see Secondary Dominant)<br><br><strong>🔵 Mediant</strong> — a weaker, more colored tonic substitute, shares 2 notes with I<br>&nbsp;&nbsp;→ <strong>iii</strong> and <strong>vi</strong> in major · <strong>III</strong> in minor (see Mediant)<br><br><strong>Typical functional progressions:</strong><br>• Perfect authentic cadence: D→T (V→I)<br>• Plagal cadence: S→T (IV→I)<br>• ii–V–I progression: S→D→T (foundational in jazz and classical tonal harmony)<br>• Dominant chain: S→D/D→D→T (ii→V/V→V→I, intensifies the arrival on D)<br><br>Functional motion carries the greatest weight when dissonances resolve: the dominant seventh descends, the leading tone ascends. 🎯';
 
   if (has('modulation','key change','change key','pivot chord'))
     return '🔁 <strong>Modulation</strong><br><br>A change from one tonal center to another within a piece of music.<br><br><strong>Most common types:</strong><br><br>• <strong>Pivot chord:</strong> a chord belonging to both keys serves as a bridge<br>→ The smoothest and most common type<br><br>• <strong>Chromatic:</strong> direct alteration of a note leading to the new tonic<br><br>• <strong>Enharmonic:</strong> reinterpreting a chord (e.g. dim7 can resolve to 4 different keys)<br><br>• <strong>To the relative key:</strong> C Major → A minor (same notes, different tonic)<br>• <strong>To the dominant:</strong> C Major → G Major (most common in classical music)<br><br>A trained ear recognizes the moment the tonal center shifts. 🎯';
