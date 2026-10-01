@@ -2059,17 +2059,18 @@ function playStudyItem(item) {
     t(1500, getFreq(item.semitones + ro), '0.5');
     t(2100, getFreq(ro), '0.5');
   } else if (['triadas','inversiones','septimas'].includes(currentMode)) {
-    item.intervals.map(i => getFreq(i)).forEach(f => t(0, f, '1.5'));
-    item.intervals.map(i => getFreq(i)).forEach((f,i) => t(2000 + i * 300, f, '0.4'));
+    const ro = Math.floor(Math.random() * 12);
+    item.intervals.map(i => getFreq(i + ro)).forEach(f => t(0, f, '1.5'));
+    item.intervals.map(i => getFreq(i + ro)).forEach((f,i) => t(2000 + i * 300, f, '0.4'));
   } else if (currentMode === 'progresiones') {
-    const ko = (currentQuestion && currentQuestion.keyOffset) || 0;
+    const ko = Math.floor(Math.random() * 12);
     item.chords.forEach((ch, ci) => {
       const bassS = (item.roots ? item.roots[ci] : ch[0]) - 12 + ko;
       t(ci * 1100, getFreq(bassS), '1.1');
       ch.map(s => getFreq(s + ko)).forEach(f => t(ci * 1100, f, '0.95'));
     });
   } else if (currentMode === 'escalas') {
-    const root = item.root || 0;
+    const root = Math.floor(Math.random() * 12);
     const up = item.intervals;
     const down = [...(item.descIntervals || item.intervals)].reverse();
     [...up, ...down].forEach((s, i) => {
