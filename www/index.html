@@ -512,13 +512,13 @@
 <div id="tutorialOverlay" class="tutorial-overlay" style="display:none;">
   <!-- Slide 1 -->
   <div class="tutorial-slide active" id="tSlide0">
-    <div class="tutorial-icon">🎵</div>
+    <div class="tutorial-icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="17" r="3" fill="currentColor" stroke="none"></circle><path d="M11.5 17V4c1.5 2.5 6 3 6 7.5"></path></svg></div>
     <div class="tutorial-title" id="tTitle0">Aprender</div>
     <div class="tutorial-body" id="tBody0">Encuentra las tarjetas de cada categoría: intervalos, tríadas, escalas y más. En modo Aprender estudias los conceptos y practicas la entonación cantando.</div>
   </div>
   <!-- Slide 2 -->
   <div class="tutorial-slide" id="tSlide1">
-    <div class="tutorial-icon">🎹</div>
+    <div class="tutorial-icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="14" rx="2"></rect><path d="M9.2 13v6M14.8 13v6"></path><rect x="7.7" y="5" width="3" height="8" rx=".5" fill="currentColor" stroke="none"></rect><rect x="13.3" y="5" width="3" height="8" rx=".5" fill="currentColor" stroke="none"></rect></svg></div>
     <div class="tutorial-title" id="tTitle1">Practicar</div>
     <div class="tutorial-body" id="tBody1">Escucha intervalos, acordes y escalas con un piano real y luego identifícalos. La app registra tu progreso y te muestra en qué necesitas mejorar.</div>
   </div>
@@ -530,13 +530,13 @@
   </div>
   <!-- Slide 4 -->
   <div class="tutorial-slide" id="tSlide3">
-    <div class="tutorial-icon">🔥</div>
+    <div class="tutorial-icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-3.9 0-6.5-2.6-6.5-6 0-3.5 2.5-5.5 3.5-9 2 1.5 3 3 3.5 5 .8-.8 1.3-2 1.3-3.2C16 9.5 18.5 12 18.5 15c0 3.4-2.6 6-6.5 6z"></path><path d="M12 21c-1.7 0-2.8-1.1-2.8-2.6 0-1.6 1.3-2.5 2.8-4.4 1.5 1.9 2.8 2.8 2.8 4.4 0 1.5-1.1 2.6-2.8 2.6z"></path></svg></div>
     <div class="tutorial-title" id="tTitle3">Tu racha diaria</div>
     <div class="tutorial-body" id="tBody3">Practica aunque sea unos minutos cada día para mantener tu racha. La constancia es la clave del oído musical. La app lleva registro de tus días consecutivos de práctica.</div>
   </div>
   <!-- Slide 5 -->
   <div class="tutorial-slide" id="tSlide4">
-    <div class="tutorial-icon">🎯</div>
+    <div class="tutorial-icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4.5"></circle><circle cx="12" cy="12" r="1.2" fill="currentColor" stroke="none"></circle></svg></div>
     <div class="tutorial-title" id="tTitle4">¡Todo listo!</div>
     <div class="tutorial-body" id="tBody4">Ya conoces lo básico. Pulsa Comenzar y empieza tu primera sesión. ¡Buena suerte!</div>
   </div>
@@ -738,7 +738,7 @@
     <div class="sheet-backdrop" id="sheetBackdrop" onclick="closeSheet()"></div>
     <div class="bottom-sheet" id="bottomSheet">
       <div class="sheet-drag"></div>
-      <span class="settings-title" id="settingsTitle">⚙️ Configuración Personalizada</span>
+      <span class="settings-title" id="settingsTitle">Configuración Personalizada</span>
       <div id="settingsPanel" class="settings-panel">
         <div id="settingsContent"></div>
       </div>
@@ -945,7 +945,7 @@ const ui = {
     navLearn:'Aprender', navPractice:'Practicar', navRacha:'Racha', navCamino:'Camino', navProgress:'Progreso', navSettings:'Ajustes',
     practiceTitle:'Practicar', practiceSub:'Selecciona un modo arriba y presiona Comenzar',
     settingsScreen:'Ajustes', segStudy:'Aprender', segTest:'Practicar',
-    studyTitle:'📚 Aprender — Explora y Aprende',
+    studyTitle:'Aprender — Explora y Aprende',
     studySubtitle:'Presiona cada tarjeta para escuchar el sonido',
     progressTitle:'📊 Mi Progreso', settingsTitle:'⚙️ Configuración Personalizada',
     scoreCorrect:'Correctas', scoreIncorrect:'Incorrectas', scoreStreak:'Racha',
@@ -971,60 +971,59 @@ const ui = {
     feedbackCorrect:'¡Correcto! ✓', feedbackIncorrect:'Incorrecto. Era:',
     feedbackApprox:'⚠️ Aproximación', feedbackApproxIs:'es el inverso de',
     sInt:{
-      selTitle:'📋 Intervalos a practicar:',selInfo:(n,t)=>`✓ ${n} / ${t} seleccionados`,
-      typeTitle:'🎵 Tipo:',melodic:'Melódico (sucesivo)',harmonic:'Armónico (simultáneo)',
+      selTitle:`${icon('list')} Intervalos a practicar:`,selInfo:(n,t)=>`✓ ${n} / ${t} seleccionados`,
+      typeTitle:`${icon('note')} Tipo:`,melodic:'Melódico (sucesivo)',harmonic:'Armónico (simultáneo)',
       dirTitle:`${icon('updown')} Dirección (melódico):`,ascending:`${icon('up')} Ascendente`,descending:`${icon('down')} Descendente`,
-      regTitle:'🎹 Registro:',low:'Grave (C3)',mid:'Medio (C4)',high:'Agudo (C5)'
+      regTitle:`${icon('piano')} Registro:`,low:'Grave (C3)',mid:'Medio (C4)',high:'Agudo (C5)'
     },
     sNotas:{
-      modeTitle:'🎵 Modo:',diatonic:'Diatónico (7 notas)',chromatic:'Cromático (12 notas)',
-      selTitle:'📋 Notas a identificar:',selInfo:(n,t)=>`✓ ${n} / ${t} seleccionadas`,
-      regTitle:'🎹 Registro:',low:'Grave (C3)',mid:'Medio (C4)',high:'Agudo (C5)',
-      refTitle:'🔔 Nota de referencia (Do):',refOn:'Activada',refOff:'Desactivada',
-      refOnText:'🔔 Se reproducirá <strong>Do</strong> antes de cada nota para orientarte.',
-      refOffText:'🔕 Sin referencia — modo avanzado para oído absoluto real.'
+      modeTitle:`${icon('note')} Modo:`,diatonic:'Diatónico (7 notas)',chromatic:'Cromático (12 notas)',
+      selTitle:`${icon('list')} Notas a identificar:`,selInfo:(n,t)=>`✓ ${n} / ${t} seleccionadas`,
+      regTitle:`${icon('piano')} Registro:`,low:'Grave (C3)',mid:'Medio (C4)',high:'Agudo (C5)',
+      refTitle:`${icon('bell')} Nota de referencia (Do):`,refOn:'Activada',refOff:'Desactivada',
+      refOnText:`${icon('bell')} Se reproducirá <strong>Do</strong> antes de cada nota para orientarte.`,
+      refOffText:`${icon('bellOff')} Sin referencia — modo avanzado para oído absoluto real.`
     },
     sGen:{
-      selInfo:(n,t)=>`✓ ${n} / ${t} seleccionados`,playTitle:'🎵 Modo de reproducción:',
+      selInfo:(n,t)=>`✓ ${n} / ${t} seleccionados`,playTitle:`${icon('note')} Modo de reproducción:`,
       harmonic:'Armónico (simultáneo)',arpeggio:'Arpegio (sucesivo)',
-      progModeTitle:'🎼 Ejercicio:',progModeId:'Identificar progresión',progModeFunc:'Función armónica',
-      regTitle:'🎹 Registro:',regLow:'Grave (C3)',regMid:'Medio (C4)',regHigh:'Agudo (C5)',
-      funcSelTitle:'📋 Funciones a identificar:',funcKeyTitle:'🎼 Modo:',
+      progModeTitle:`${icon('score')} Ejercicio:`,progModeId:'Identificar progresión',progModeFunc:'Función armónica',
+      regTitle:`${icon('piano')} Registro:`,regLow:'Grave (C3)',regMid:'Medio (C4)',regHigh:'Agudo (C5)',
+      funcSelTitle:`${icon('list')} Funciones a identificar:`,funcKeyTitle:`${icon('score')} Modo:`,
       funcHint:'Escucharás una cadencia como contexto y luego un acorde: ¿qué función tiene?',
-      funcUnlockTitle:'🔓 ¡Función Desbloqueada!',
+      funcUnlockTitle:`${icon('unlock')} ¡Función Desbloqueada!`,
       funcUnlockBody:(name)=>`Ya puedes practicar <strong>${name}</strong> en Función Armónica.`,
       funcUnlockBtn:'¡A practicar!'
     },
-    notasRef:'🔔 Escucharás primero una <strong style="color:var(--warning)">nota de referencia</strong>, luego la nota a identificar',
-    notasNoRef:'🔕 Sin referencia — identifica la nota directamente',
-    noData:'🎵 Aún no hay datos. Practica en <strong>Modo Prueba</strong> para ver tu progreso aquí.',
+    notasNoRef:`${icon('bellOff')} Sin referencia — identifica la nota directamente`,
+    noData:`${icon('note')} Aún no hay datos. Practica en <strong>Modo Prueba</strong> para ver tu progreso aquí.`,
     suggestions:'💡 Sugerencias',
     suggInverse:(cat,a,b,n)=>`En <strong>${cat}</strong> confundes <strong>${a}</strong> con su inverso <strong>${b}</strong> (${n} veces). Son complementarios — practica en modo armónico para diferenciarlos.`,
     suggError:(cat,a,b,n)=>`En <strong>${cat}</strong> confundes frecuentemente <strong>${a}</strong> con <strong>${b}</strong> (${n} veces). Enfoca tus próximas sesiones en este ítem.`,
     btnDelete:`${icon('trash')} Borrar todo el progreso`,
     confirmDelete:'¿Seguro que quieres borrar todo tu historial de progreso?',
-    analysisTitle:'🎯 Tu Análisis Musical',
+    analysisTitle:`${icon('target')} Tu Análisis Musical`,
     analysisStrong:(cat,pct,item)=>`✅ <strong>Punto fuerte:</strong> ${cat} — ${pct}% de aciertos${item?`, especialmente <em>${item}</em>`:''}.`,
     analysisDiff:(name,cat,pct,conf,confN)=>`⚠️ <strong>Mayor dificultad:</strong> <em>${name}</em> en ${cat} (${pct}% de aciertos)${conf?` — lo confundes con <strong>${conf}</strong> (${confN} veces)`:''}. `,
-    analysisRec:(cat)=>`🎯 <strong>Recomendación:</strong> Dedica tu próxima sesión a <strong>${cat}</strong> — es el área con mayor margen de mejora.`,
+    analysisRec:(cat)=>`${icon('target')} <strong>Recomendación:</strong> Dedica tu próxima sesión a <strong>${cat}</strong> — es el área con mayor margen de mejora.`,
     analysisConf:(cat,a,b,n)=>`🔄 <strong>Confusión frecuente:</strong> En ${cat} confundes <strong>${a}</strong> con <strong>${b}</strong> (${n} veces).`,
     analysisBased:(n)=>`Basado en ${n} respuestas registradas.`,
     cats:{intervalos:'Intervalos',triadas:'Tríadas',inversiones:'Inversiones',septimas:'Acordes con Séptima',progresiones:'Progresiones',escalas:'Escalas',notas:'Nota Absoluta',alturas:'Alturas',entonacion:'Entonación',entonAcordes:'Entonación Acordes',entonEscalas:'Entonación Escalas'},
     sAlturas:{
-      octTitle:'🎹 Registro de referencia:',
+      octTitle:`${icon('piano')} Registro de referencia:`,
       ansHigh:'Agudo ↑', ansLow:'Grave ↓',
       descGrave:'Sonidos graves, como el contrabajo o la tuba. Frecuencias bajas.',
       descAgudo:'Sonidos agudos, como la flauta o el violín. Frecuencias altas.',
       tipAlt:'💡 Escucha primero la <strong>nota de referencia</strong>, luego el sonido de comparación. ¿Subió o bajó la altura?'
     },
     sEntonacion:{
-      rangeTitle:'🎤 Tu rango vocal:',
+      rangeTitle:`${icon('mic')} Tu rango vocal:`,
       ranges:['Soprano','Mezzo','Contralto','Tenor','Barítono','Bajo'],
       instrTitle:'¿Cómo funciona?',
       instrText:'La app reproduce una nota de referencia. Tú entonas el intervalo indicado. El micrófono detecta tu afinación en tiempo real y te dice si es correcto.',
       btnListen:'▶ Referencia', btnSing:'🎤 Cantar', btnStop:'⏹ Detener',
       target:'Canta', from:'desde',
-      noSignal:'Sin señal 🎤', phase1:'Canta la nota de referencia primero', phase2txt:'Ahora canta el intervalo', incorrect:'Intervalo incorrecto ✗',
+      noSignal:'Sin señal', phase1:'Canta la nota de referencia primero', phase2txt:'Ahora canta el intervalo', incorrect:'Intervalo incorrecto ✗',
       correct:'¡Afinación correcta! ✓',
       approx:'Cerca... sigue practicando',
       micError:'No se pudo acceder al micrófono. Verifica los permisos.'
@@ -1052,7 +1051,7 @@ const ui = {
     navLearn:'Learn', navPractice:'Practice', navRacha:'Streak', navCamino:'Path', navProgress:'Progress', navSettings:'Settings',
     practiceTitle:'Practice', practiceSub:'Select a mode above and press Start',
     settingsScreen:'Settings', segStudy:'Learn', segTest:'Practice',
-    studyTitle:'📚 Learn — Explore and Listen',
+    studyTitle:'Learn — Explore and Listen',
     studySubtitle:'Tap each card to hear the sound',
     progressTitle:'📊 My Progress', settingsTitle:'⚙️ Custom Settings',
     scoreCorrect:'Correct', scoreIncorrect:'Incorrect', scoreStreak:'Streak',
@@ -1078,54 +1077,53 @@ const ui = {
     feedbackCorrect:'Correct! ✓', feedbackIncorrect:'Incorrect. It was:',
     feedbackApprox:'⚠️ Close', feedbackApproxIs:'is the inverse of',
     sInt:{
-      selTitle:'📋 Intervals to practice:',selInfo:(n,t)=>`✓ ${n} / ${t} selected`,
-      typeTitle:'🎵 Type:',melodic:'Melodic (sequential)',harmonic:'Harmonic (simultaneous)',
+      selTitle:`${icon('list')} Intervals to practice:`,selInfo:(n,t)=>`✓ ${n} / ${t} selected`,
+      typeTitle:`${icon('note')} Type:`,melodic:'Melodic (sequential)',harmonic:'Harmonic (simultaneous)',
       dirTitle:`${icon('updown')} Direction (melodic):`,ascending:`${icon('up')} Ascending`,descending:`${icon('down')} Descending`,
-      regTitle:'🎹 Register:',low:'Low (C3)',mid:'Mid (C4)',high:'High (C5)'
+      regTitle:`${icon('piano')} Register:`,low:'Low (C3)',mid:'Mid (C4)',high:'High (C5)'
     },
     sNotas:{
-      modeTitle:'🎵 Mode:',diatonic:'Diatonic (7 notes)',chromatic:'Chromatic (12 notes)',
-      selTitle:'📋 Notes to identify:',selInfo:(n,t)=>`✓ ${n} / ${t} selected`,
-      regTitle:'🎹 Register:',low:'Low (C3)',mid:'Mid (C4)',high:'High (C5)',
-      refTitle:'🔔 Reference note (C):',refOn:'Enabled',refOff:'Disabled',
-      refOnText:'🔔 <strong>C</strong> will play before each note to guide you.',
-      refOffText:'🔕 No reference — advanced mode for true absolute pitch.'
+      modeTitle:`${icon('note')} Mode:`,diatonic:'Diatonic (7 notes)',chromatic:'Chromatic (12 notes)',
+      selTitle:`${icon('list')} Notes to identify:`,selInfo:(n,t)=>`✓ ${n} / ${t} selected`,
+      regTitle:`${icon('piano')} Register:`,low:'Low (C3)',mid:'Mid (C4)',high:'High (C5)',
+      refTitle:`${icon('bell')} Reference note (C):`,refOn:'Enabled',refOff:'Disabled',
+      refOnText:`${icon('bell')} <strong>C</strong> will play before each note to guide you.`,
+      refOffText:`${icon('bellOff')} No reference — advanced mode for true absolute pitch.`
     },
     sGen:{
-      selInfo:(n,t)=>`✓ ${n} / ${t} selected`,playTitle:'🎵 Playback mode:',
+      selInfo:(n,t)=>`✓ ${n} / ${t} selected`,playTitle:`${icon('note')} Playback mode:`,
       harmonic:'Harmonic (simultaneous)',arpeggio:'Arpeggio (sequential)',
-      progModeTitle:'🎼 Exercise:',progModeId:'Identify progression',progModeFunc:'Harmonic function',
-      regTitle:'🎹 Register:',regLow:'Low (C3)',regMid:'Mid (C4)',regHigh:'High (C5)',
-      funcSelTitle:'📋 Functions to identify:',funcKeyTitle:'🎼 Mode:',
+      progModeTitle:`${icon('score')} Exercise:`,progModeId:'Identify progression',progModeFunc:'Harmonic function',
+      regTitle:`${icon('piano')} Register:`,regLow:'Low (C3)',regMid:'Mid (C4)',regHigh:'High (C5)',
+      funcSelTitle:`${icon('list')} Functions to identify:`,funcKeyTitle:`${icon('score')} Mode:`,
       funcHint:'You will hear a cadence as context and then a chord: what is its function?',
-      funcUnlockTitle:'🔓 Function Unlocked!',
+      funcUnlockTitle:`${icon('unlock')} Function Unlocked!`,
       funcUnlockBody:(name)=>`You can now practice <strong>${name}</strong> in Harmonic Function.`,
       funcUnlockBtn:'Keep practicing!'
     },
-    notasRef:'🔔 You will first hear a <strong style="color:var(--warning)">reference note</strong>, then the note to identify',
-    notasNoRef:'🔕 No reference — identify the note directly',
-    noData:'🎵 No data yet. Practice in <strong>Practice Mode</strong> to see your progress here.',
+    notasNoRef:`${icon('bellOff')} No reference — identify the note directly`,
+    noData:`${icon('note')} No data yet. Practice in <strong>Practice Mode</strong> to see your progress here.`,
     suggestions:'💡 Suggestions',
     suggInverse:(cat,a,b,n)=>`In <strong>${cat}</strong> you confuse <strong>${a}</strong> with its inverse <strong>${b}</strong> (${n} times). They are complementary — practice in harmonic mode to distinguish them.`,
     suggError:(cat,a,b,n)=>`In <strong>${cat}</strong> you frequently confuse <strong>${a}</strong> with <strong>${b}</strong> (${n} times). Focus your next sessions on this item.`,
     btnDelete:`${icon('trash')} Delete all progress`,
     confirmDelete:'Are you sure you want to delete all your progress history?',
-    analysisTitle:'🎯 Your Musical Analysis',
+    analysisTitle:`${icon('target')} Your Musical Analysis`,
     analysisStrong:(cat,pct,item)=>`✅ <strong>Strong point:</strong> ${cat} — ${pct}% accuracy${item?`, especially <em>${item}</em>`:''}.`,
     analysisDiff:(name,cat,pct,conf,confN)=>`⚠️ <strong>Biggest difficulty:</strong> <em>${name}</em> in ${cat} (${pct}% accuracy)${conf?` — you confuse it with <strong>${conf}</strong> (${confN} times)`:''}. `,
-    analysisRec:(cat)=>`🎯 <strong>Recommendation:</strong> Dedicate your next session to <strong>${cat}</strong> — it's the area with the most room for improvement.`,
+    analysisRec:(cat)=>`${icon('target')} <strong>Recommendation:</strong> Dedicate your next session to <strong>${cat}</strong> — it's the area with the most room for improvement.`,
     analysisConf:(cat,a,b,n)=>`🔄 <strong>Frequent confusion:</strong> In ${cat} you confuse <strong>${a}</strong> with <strong>${b}</strong> (${n} times).`,
     analysisBased:(n)=>`Based on ${n} recorded answers.`,
     cats:{intervalos:'Intervals',triadas:'Triads',inversiones:'Inversions',septimas:'Seventh Chords',progresiones:'Progressions',escalas:'Scales',notas:'Absolute Pitch',alturas:'Pitch Height',entonacion:'Intonation',entonAcordes:'Chord Intonation',entonEscalas:'Scale Intonation'},
     sAlturas:{
-      octTitle:'🎹 Reference register:',
+      octTitle:`${icon('piano')} Reference register:`,
       ansHigh:'High ↑', ansLow:'Low ↓',
       descGrave:'Low sounds, like a bass guitar or tuba. Low frequencies.',
       descAgudo:'High sounds, like a flute or violin. High frequencies.',
       tipAlt:'💡 Listen to the <strong>reference note</strong> first, then the comparison sound. Did the pitch go up or down?'
     },
     sEntonacion:{
-      rangeTitle:'🎤 Your vocal range:',
+      rangeTitle:`${icon('mic')} Your vocal range:`,
       ranges:['Soprano','Mezzo','Contralto','Tenor','Baritone','Bass'],
       instrTitle:'How it works:',
       instrText:'The app plays a reference note. You sing the indicated interval. The microphone detects your tuning in real time and tells you if it\'s correct.',
@@ -2192,7 +2190,7 @@ function updateSettingsPanel() {
         </div>
       </div>
       <div class="settings-section">
-        <h4>🎵 ${currentLang==='es'?'Intervalos a practicar':'Intervals to practice'}:</h4>
+        <h4>${icon('note')} ${currentLang==='es'?'Intervalos a practicar':'Intervals to practice'}:</h4>
         <div class="toggle-group">
           ${musicData.intervalos.map(x => `<button class="toggle-btn ${ec.selectedIntervals.includes(x.name)?'active':''}" onclick="toggleEntonInterval('${x.name}')">${dn(x.name).replace(' (','\n(')}</button>`).join('')}
         </div>
@@ -2212,7 +2210,7 @@ function updateSettingsPanel() {
         <p style="margin:8px 0 0;font-size:0.85em;color:var(--text-muted);">Ref: ${midiNoteName(midis[cfg.voiceRange])}</p>
       </div>
       <div class="settings-section">
-        <h4>📋 ${label}:</h4>
+        <h4>${icon('list')} ${label}:</h4>
         <div class="toggle-group">
           ${dataArr.map(x => `<button class="toggle-btn ${cfg.selected.includes(x.name)?'active':''}" onclick="toggleEntonSeqSel('${currentMode}','${x.name}')">${dn(x.name)}</button>`).join('')}
         </div>
@@ -2274,7 +2272,7 @@ function updateSettingsPanel() {
     }
     panel.innerHTML = lead + `
       <div class="settings-section">
-        <h4>📋 ${catLabel}:</h4>
+        <h4>${icon('list')} ${catLabel}:</h4>
         <div class="toggle-group">
           ${arr.map(x => `<button class="toggle-btn ${sel.includes(x.name)?'active':''}" onclick="toggleSel('${currentMode}','${x.name.replace(/'/g,"\\'")}')"> ${dn(x.name)}</button>`).join('')}
         </div>
@@ -3340,11 +3338,11 @@ function startRetoDia() {
 
 function showRetoCelebration(streak) {
   const msg = currentLang === 'es'
-    ? `🎯 ¡Reto completado!\n${streak > 1 ? streak + ' días seguidos 🔥' : '¡Primer reto!'}`
-    : `🎯 Challenge complete!\n${streak > 1 ? streak + ' days in a row 🔥' : 'First challenge!'}`;
+    ? `${icon('target')} ¡Reto completado!\n${streak > 1 ? streak + ' días seguidos ' + icon('flame') : '¡Primer reto!'}`
+    : `${icon('target')} Challenge complete!\n${streak > 1 ? streak + ' days in a row ' + icon('flame') : 'First challenge!'}`;
   const el = document.createElement('div');
   el.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#241a3f,#161334);border:1.5px solid var(--success);border-radius:14px;padding:14px 20px;text-align:center;z-index:999;font-size:0.95em;color:var(--text);white-space:pre-line;animation:popIn 0.4s ease;max-width:260px;';
-  el.textContent = msg;
+  el.innerHTML = msg;
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 3500);
 }
@@ -3614,7 +3612,7 @@ function sendMessage() {
   addMsg('user', msg);
   const btn = document.getElementById('sendButton');
   btn.disabled = true;
-  const lid = addMsg('loading', currentLang === 'es' ? '🎼 Pensando...' : '🎼 Thinking...');
+  const lid = addMsg('loading', currentLang === 'es' ? `${icon('score')} Pensando...` : `${icon('score')} Thinking...`);
   setTimeout(() => { removeMsg(lid); addMsg('assistant', getResponse(msg)); btn.disabled = false; }, 550);
 }
 
@@ -3641,8 +3639,8 @@ function saveChatFeedback() {
     const bots = msgs.querySelectorAll('.chat-message.assistant');
     const last = bots[bots.length - 1];
     if (last) last.innerHTML = currentLang === 'en'
-      ? '✅ <strong>Thank you!</strong><br>Your suggestion has been saved. We\'ll use it to keep improving Audikus. 🎵'
-      : '✅ <strong>¡Gracias!</strong><br>Tu sugerencia fue guardada. La usaremos para seguir mejorando Audikus. 🎵';
+      ? `${icon('check',16,'var(--success)')} <strong>Thank you!</strong><br>Your suggestion has been saved. We'll use it to keep improving Audikus. ${icon('note')}`
+      : `${icon('check',16,'var(--success)')} <strong>¡Gracias!</strong><br>Tu sugerencia fue guardada. La usaremos para seguir mejorando Audikus. ${icon('note')}`;
   }
 }
 
@@ -3876,7 +3874,7 @@ function getResponse(question) {
     return '🎤 <strong>¿Problemas para afinar?</strong><br><br>Es muy normal al principio. El oído y la voz son un circuito que se calibra con práctica.<br><br>Estrategias:<br>1. <strong>Escucha primero</strong>, canta después — no te apures<br>2. Usa la tarjeta de Entonación en Audikus: te muestra si vas alto o bajo en tiempo real<br>3. Empieza con intervalos pequeños (2ª, 3ª)<br>4. Grábate y escucha sin juzgarte<br>5. Canta suave y lento al principio<br><br>La voz es un músculo. Con constancia, la afinación mejora. 🎯';
 
   // Fallback con sugerencia
-  return '🎵 Por ahora no tengo una respuesta para esa pregunta.<br><br><button class="chat-feedback-btn" onclick="saveChatFeedback()">💡 Enviar esta pregunta como sugerencia de contenido para Audikus</button>';
+  return `${icon('note')} Por ahora no tengo una respuesta para esa pregunta.<br><br><button class="chat-feedback-btn" onclick="saveChatFeedback()">${icon('bulb')} Enviar esta pregunta como sugerencia de contenido para Audikus</button>`;
 }
 
 function getResponseEN(question) {
@@ -4071,7 +4069,7 @@ function getResponseEN(question) {
   if (has('can\'t sing in tune','out of tune','can\'t pitch','singing problems','voice problems'))
     return '🎤 <strong>Trouble Staying in Tune?</strong><br><br>This is very common at first. The ear and voice form a circuit that calibrates with practice.<br><br>Strategies:<br>1. <strong>Listen first</strong>, then sing — don\'t rush<br>2. Use Audikus\' Intonation card: it shows in real time if you\'re sharp or flat<br>3. Start with small intervals (2nd, 3rd)<br>4. Record yourself and listen without judging<br>5. Sing softly and slowly at first<br><br>The voice is a muscle. With consistency, intonation improves. 🎯';
 
-  return '🎵 I don\'t have an answer for that question yet.<br><br><button class="chat-feedback-btn" onclick="saveChatFeedback()">💡 Send this question as a content suggestion for Audikus</button>';
+  return `${icon('note')} I don't have an answer for that question yet.<br><br><button class="chat-feedback-btn" onclick="saveChatFeedback()">${icon('bulb')} Send this question as a content suggestion for Audikus</button>`;
 }
 
 updateStaticText();
