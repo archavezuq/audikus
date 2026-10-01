@@ -2842,8 +2842,8 @@ function renderOptions(options, correctIndex) {
         : ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
       const refName = `<strong style="color:var(--warning)">${ns[ro]}</strong>`;
       refEl.innerHTML = currentLang === 'es'
-        ? `🔔 Escucharás primero ${refName} como referencia, luego la nota a identificar`
-        : `🔔 You will first hear ${refName} as reference, then the note to identify`;
+        ? `${icon('bell')} Escucharás primero ${refName} como referencia, luego la nota a identificar`
+        : `${icon('bell')} You will first hear ${refName} as reference, then the note to identify`;
     } else {
       refEl.innerHTML = tx('notasNoRef');
     }
@@ -2852,8 +2852,15 @@ function renderOptions(options, correctIndex) {
   options.forEach((opt, i) => {
     const btn = document.createElement('button');
     btn.className = 'option-btn';
+    // El 'name' (clave de progreso en localStorage) conserva la flecha sin tocar;
+    // solo el texto mostrado la reemplaza por el ícono, para no romper la continuidad
+    // del progreso ya guardado de usuarios existentes del módulo Alturas.
     btn.setAttribute('data-internal', opt.name);
-    btn.textContent = dn(opt.name);
+    if (currentMode === 'alturas') {
+      btn.innerHTML = dn(opt.name).replace(/\s*[↑↓]\s*$/, ' ' + icon(opt.name.includes('↑') ? 'up' : 'down'));
+    } else {
+      btn.textContent = dn(opt.name);
+    }
     btn.onclick = () => checkAnswer(i, correctIndex, btn);
     c.appendChild(btn);
   });
