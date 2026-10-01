@@ -963,13 +963,13 @@ const ui = {
       entonAcordes:{title:'Entonación Acordes',sub:'Canta cada nota del acorde'},
       entonEscalas:{title:'Entonación Escalas',sub:'Canta la escala completa'}
     },
-    tipTitle:'💡 Consejo de estudio:',
+    tipTitle:`${icon('bulb')} Consejo de estudio:`,
     tipText:'Aprende a <strong>cantar el fragmento inicial</strong> de cada canción de referencia, especialmente el motivo donde aparece el intervalo. Practícalo en <strong>distintas tonalidades</strong> y juega con él: cámbialo de ritmo, cántalo al tempo habitual y también más rápido y más lento. Al interiorizar ese motivo así, construyes una <strong>caja de herramientas auditivas</strong> que reconoce el intervalo automáticamente en cualquier contexto musical.',
     tipTextChords:'<strong>Canta cada acorde</strong> antes de entrenar. Entonar sus notas en voz alta te ayuda a interiorizar su color sonoro. En el modo prueba puedes identificarlo de dos formas: <strong>(1)</strong> ubica la nota más grave y analiza los intervalos hacia arriba; <strong>(2)</strong> desde la nota más aguda, construye hacia abajo. Practica los dos métodos.',
     tipTextInv:'Canta cada acorde primero en <strong>posición fundamental</strong>, luego en <strong>1ª inversión</strong> y finalmente en <strong>2ª inversión</strong>. Mientras cantas, piensa en las distancias entre las notas. En el modo prueba: <strong>(1)</strong> ubica la nota más grave e identifica los intervalos superiores; <strong>(2)</strong> desde la nota más aguda, construye hacia abajo. <strong>Cantar es clave.</strong>',
     refLabel:'♩ Referencia melódica', semitones:'semitonos',
     feedbackCorrect:'¡Correcto! ✓', feedbackIncorrect:'Incorrecto. Era:',
-    feedbackApprox:'⚠️ Aproximación', feedbackApproxIs:'es el inverso de',
+    feedbackApprox:`${icon('warn',16,'var(--warning)')} Aproximación`, feedbackApproxIs:'es el inverso de',
     sInt:{
       selTitle:`${icon('list')} Intervalos a practicar:`,selInfo:(n,t)=>`✓ ${n} / ${t} seleccionados`,
       typeTitle:`${icon('note')} Tipo:`,melodic:'Melódico (sucesivo)',harmonic:'Armónico (simultáneo)',
@@ -997,14 +997,14 @@ const ui = {
     },
     notasNoRef:`${icon('bellOff')} Sin referencia — identifica la nota directamente`,
     noData:`${icon('note')} Aún no hay datos. Practica en <strong>Modo Prueba</strong> para ver tu progreso aquí.`,
-    suggestions:'💡 Sugerencias',
+    suggestions:`${icon('bulb')} Sugerencias`,
     suggInverse:(cat,a,b,n)=>`En <strong>${cat}</strong> confundes <strong>${a}</strong> con su inverso <strong>${b}</strong> (${n} veces). Son complementarios — practica en modo armónico para diferenciarlos.`,
     suggError:(cat,a,b,n)=>`En <strong>${cat}</strong> confundes frecuentemente <strong>${a}</strong> con <strong>${b}</strong> (${n} veces). Enfoca tus próximas sesiones en este ítem.`,
     btnDelete:`${icon('trash')} Borrar todo el progreso`,
     confirmDelete:'¿Seguro que quieres borrar todo tu historial de progreso?',
     analysisTitle:`${icon('target')} Tu Análisis Musical`,
-    analysisStrong:(cat,pct,item)=>`✅ <strong>Punto fuerte:</strong> ${cat} — ${pct}% de aciertos${item?`, especialmente <em>${item}</em>`:''}.`,
-    analysisDiff:(name,cat,pct,conf,confN)=>`⚠️ <strong>Mayor dificultad:</strong> <em>${name}</em> en ${cat} (${pct}% de aciertos)${conf?` — lo confundes con <strong>${conf}</strong> (${confN} veces)`:''}. `,
+    analysisStrong:(cat,pct,item)=>`${icon('check',16,'var(--success)')} <strong>Punto fuerte:</strong> ${cat} — ${pct}% de aciertos${item?`, especialmente <em>${item}</em>`:''}.`,
+    analysisDiff:(name,cat,pct,conf,confN)=>`${icon('warn',16,'var(--warning)')} <strong>Mayor dificultad:</strong> <em>${name}</em> en ${cat} (${pct}% de aciertos)${conf?` — lo confundes con <strong>${conf}</strong> (${confN} veces)`:''}. `,
     analysisRec:(cat)=>`${icon('target')} <strong>Recomendación:</strong> Dedica tu próxima sesión a <strong>${cat}</strong> — es el área con mayor margen de mejora.`,
     analysisConf:(cat,a,b,n)=>`🔄 <strong>Confusión frecuente:</strong> En ${cat} confundes <strong>${a}</strong> con <strong>${b}</strong> (${n} veces).`,
     analysisBased:(n)=>`Basado en ${n} respuestas registradas.`,
@@ -1014,7 +1014,7 @@ const ui = {
       ansHigh:'Agudo ↑', ansLow:'Grave ↓',
       descGrave:'Sonidos graves, como el contrabajo o la tuba. Frecuencias bajas.',
       descAgudo:'Sonidos agudos, como la flauta o el violín. Frecuencias altas.',
-      tipAlt:'💡 Escucha primero la <strong>nota de referencia</strong>, luego el sonido de comparación. ¿Subió o bajó la altura?'
+      tipAlt:`${icon('bulb')} Escucha primero la <strong>nota de referencia</strong>, luego el sonido de comparación. ¿Subió o bajó la altura?`
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Tu rango vocal:`,
@@ -1028,7 +1028,7 @@ const ui = {
       approx:'Cerca... sigue practicando',
       micError:'No se pudo acceder al micrófono. Verifica los permisos.'
     },
-    footerDev:'Desarrollado por:', footerContact:'📧 Contacto:',
+    footerDev:'Desarrollado por:', footerContact:`${icon('mail')} Contacto:`,
     chatTitle:'SinKo',
     chatSubtitle:'Teoría Musical',
     chatPlaceholder:'Pregunta sobre teoría musical...',
@@ -1041,7 +1041,7 @@ const ui = {
       {text:'Enharmonía',         q:'¿Qué es enharmonía?'},
       {text:'Modulación',         q:'¿Qué es modulación?'}
     ],
-    chatOffTopic:'⚠️ Solo respondo preguntas de <strong>teoría musical</strong> relacionadas con los temas de la app: intervalos, acordes, escalas, progresiones, modulación y estrategias de estudio. ¿Tienes alguna pregunta musical?'
+    chatOffTopic:`${icon('warn',16,'var(--warning)')} Solo respondo preguntas de <strong>teoría musical</strong> relacionadas con los temas de la app: intervalos, acordes, escalas, progresiones, modulación y estrategias de estudio. ¿Tienes alguna pregunta musical?`
   },
   en: {
     appTitle:'Audikus — Ear Training',
@@ -1069,13 +1069,13 @@ const ui = {
       entonAcordes:{title:'Chord Intonation',sub:'Sing each note of the chord'},
       entonEscalas:{title:'Scale Intonation',sub:'Sing the full scale'}
     },
-    tipTitle:'💡 Study tip:',
+    tipTitle:`${icon('bulb')} Study tip:`,
     tipText:'Learn to <strong>sing the opening motif</strong> of each reference song, especially the motif where the interval appears. Practice it in <strong>different keys</strong> and play with it: change its rhythm, sing it at the usual tempo and also faster and slower. By internalizing that motif this way, you build an <strong>auditory toolbox</strong> that recognizes the interval automatically in any musical context.',
     tipTextChords:'<strong>Sing each chord</strong> before practicing. Singing its notes out loud helps you internalize its tonal color. In practice mode you can identify it two ways: <strong>(1)</strong> locate the lowest note and analyze the intervals upward; <strong>(2)</strong> from the highest note, build downward. Practice both methods.',
     tipTextInv:'Sing each chord first in <strong>root position</strong>, then in <strong>1st inversion</strong>, then in <strong>2nd inversion</strong>. While singing, think about the distances between the notes. In practice mode: <strong>(1)</strong> locate the lowest note and identify the upper intervals; <strong>(2)</strong> from the highest note, build downward. <strong>Singing is key.</strong>',
     refLabel:'♩ Melodic Reference', semitones:'semitones',
     feedbackCorrect:'Correct! ✓', feedbackIncorrect:'Incorrect. It was:',
-    feedbackApprox:'⚠️ Close', feedbackApproxIs:'is the inverse of',
+    feedbackApprox:`${icon('warn',16,'var(--warning)')} Close`, feedbackApproxIs:'is the inverse of',
     sInt:{
       selTitle:`${icon('list')} Intervals to practice:`,selInfo:(n,t)=>`✓ ${n} / ${t} selected`,
       typeTitle:`${icon('note')} Type:`,melodic:'Melodic (sequential)',harmonic:'Harmonic (simultaneous)',
@@ -1103,14 +1103,14 @@ const ui = {
     },
     notasNoRef:`${icon('bellOff')} No reference — identify the note directly`,
     noData:`${icon('note')} No data yet. Practice in <strong>Practice Mode</strong> to see your progress here.`,
-    suggestions:'💡 Suggestions',
+    suggestions:`${icon('bulb')} Suggestions`,
     suggInverse:(cat,a,b,n)=>`In <strong>${cat}</strong> you confuse <strong>${a}</strong> with its inverse <strong>${b}</strong> (${n} times). They are complementary — practice in harmonic mode to distinguish them.`,
     suggError:(cat,a,b,n)=>`In <strong>${cat}</strong> you frequently confuse <strong>${a}</strong> with <strong>${b}</strong> (${n} times). Focus your next sessions on this item.`,
     btnDelete:`${icon('trash')} Delete all progress`,
     confirmDelete:'Are you sure you want to delete all your progress history?',
     analysisTitle:`${icon('target')} Your Musical Analysis`,
-    analysisStrong:(cat,pct,item)=>`✅ <strong>Strong point:</strong> ${cat} — ${pct}% accuracy${item?`, especially <em>${item}</em>`:''}.`,
-    analysisDiff:(name,cat,pct,conf,confN)=>`⚠️ <strong>Biggest difficulty:</strong> <em>${name}</em> in ${cat} (${pct}% accuracy)${conf?` — you confuse it with <strong>${conf}</strong> (${confN} times)`:''}. `,
+    analysisStrong:(cat,pct,item)=>`${icon('check',16,'var(--success)')} <strong>Strong point:</strong> ${cat} — ${pct}% accuracy${item?`, especially <em>${item}</em>`:''}.`,
+    analysisDiff:(name,cat,pct,conf,confN)=>`${icon('warn',16,'var(--warning)')} <strong>Biggest difficulty:</strong> <em>${name}</em> in ${cat} (${pct}% accuracy)${conf?` — you confuse it with <strong>${conf}</strong> (${confN} times)`:''}. `,
     analysisRec:(cat)=>`${icon('target')} <strong>Recommendation:</strong> Dedicate your next session to <strong>${cat}</strong> — it's the area with the most room for improvement.`,
     analysisConf:(cat,a,b,n)=>`🔄 <strong>Frequent confusion:</strong> In ${cat} you confuse <strong>${a}</strong> with <strong>${b}</strong> (${n} times).`,
     analysisBased:(n)=>`Based on ${n} recorded answers.`,
@@ -1120,7 +1120,7 @@ const ui = {
       ansHigh:'High ↑', ansLow:'Low ↓',
       descGrave:'Low sounds, like a bass guitar or tuba. Low frequencies.',
       descAgudo:'High sounds, like a flute or violin. High frequencies.',
-      tipAlt:'💡 Listen to the <strong>reference note</strong> first, then the comparison sound. Did the pitch go up or down?'
+      tipAlt:`${icon('bulb')} Listen to the <strong>reference note</strong> first, then the comparison sound. Did the pitch go up or down?`
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Your vocal range:`,
@@ -1134,7 +1134,7 @@ const ui = {
       approx:'Almost... keep practicing',
       micError:'Could not access microphone. Check permissions.'
     },
-    footerDev:'Developed by:', footerContact:'📧 Contact:',
+    footerDev:'Developed by:', footerContact:`${icon('mail')} Contact:`,
     chatTitle:'SinKo',
     chatSubtitle:'Music Theory',
     chatPlaceholder:'Ask about music theory...',
@@ -1147,7 +1147,7 @@ const ui = {
       {text:'Enharmonics',      q:'What is enharmonics?'},
       {text:'Modulation',       q:'What is modulation?'}
     ],
-    chatOffTopic:'⚠️ I only answer <strong>music theory</strong> questions related to the app\'s topics: intervals, chords, scales, progressions, modulation and study strategies. Do you have a music question?'
+    chatOffTopic:`${icon('warn',16,'var(--warning)')} I only answer <strong>music theory</strong> questions related to the app's topics: intervals, chords, scales, progressions, modulation and study strategies. Do you have a music question?`
   }
 };
 function tx(key) { return (ui[currentLang]||ui.es)[key] || ui.es[key] || key; }
@@ -2256,7 +2256,7 @@ function updateSettingsPanel() {
       <div class="settings-section">
         <h4>${sg.funcSelTitle}</h4>
         <div class="toggle-group">
-          ${harmonicFunctions.names.map(n => `<button class="toggle-btn ${sp.funcSel.includes(n)?'active':''}" onclick="toggleFuncSel('${n}')">${funcState.unlocked.includes(n)?'':'🔒 '}${dn(n)}</button>`).join('')}
+          ${harmonicFunctions.names.map(n => `<button class="toggle-btn ${sp.funcSel.includes(n)?'active':''}" onclick="toggleFuncSel('${n}')">${funcState.unlocked.includes(n)?'':icon('lock')+' '}${dn(n)}</button>`).join('')}
         </div>
       </div>
       <div class="settings-section">
@@ -3188,14 +3188,14 @@ async function toggleSingingSeq() {
               ? `¿Quieres escuchar ${_isAcorde ? 'el acorde' : 'la escala'} <strong>${_qName}</strong> que realizaste?`
               : `Would you like to hear the ${_isAcorde ? 'chord' : 'scale'} <strong>${_qName}</strong> you just sang?`;
             const _cont = currentLang === 'es' ? 'Continuar →' : 'Continue →';
-            const _listen = currentLang === 'es' ? '🔊 Escuchar' : '🔊 Listen';
+            const _listen = currentLang === 'es' ? `${icon('speaker')} Escuchar` : `${icon('speaker')} Listen`;
             const _btnBase = 'border:none;border-radius:24px;padding:11px 22px;font-size:0.92em;font-weight:700;cursor:pointer;transition:opacity 0.2s;';
             const _cont2 = document.getElementById('optionsContainer');
             showSinkoStreak();
             try { localStorage.setItem('audikus_last_study', Date.now().toString()); } catch(e) {}
             if (_cont2) _cont2.innerHTML = `
               <div style="text-align:center;padding:20px 12px 8px;">
-                <div style="font-size:2em;margin-bottom:6px;">✅</div>
+                <div style="margin-bottom:6px;">${icon('check',32,'var(--success)')}</div>
                 <div style="font-size:1em;font-weight:700;color:var(--success);margin-bottom:14px;">${tx('feedbackCorrect')}</div>
                 <div style="font-size:0.9em;color:var(--text-muted);margin-bottom:20px;line-height:1.5;">${_prompt}</div>
                 <div style="display:flex;gap:12px;justify-content:center;">
