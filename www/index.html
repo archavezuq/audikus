@@ -987,6 +987,7 @@ const ui = {
     },
     sGen:{
       selInfo:(n,t)=>`✓ ${n} / ${t} seleccionados`,playTitle:`${icon('note')} Modo de reproducción:`,
+      tempoTitle:`${icon('drum')} Ritmo:`,tempoFast:'Corcheas (rápido)',tempoSlow:'Negras (lento)',
       harmonic:'Armónico (simultáneo)',arpeggio:'Arpegio (sucesivo)',
       progModeTitle:`${icon('score')} Ejercicio:`,progModeId:'Identificar progresión',progModeFunc:'Función armónica',
       regTitle:`${icon('piano')} Registro:`,regLow:'Grave (C3)',regMid:'Medio (C4)',regHigh:'Agudo (C5)',
@@ -1093,6 +1094,7 @@ const ui = {
     },
     sGen:{
       selInfo:(n,t)=>`✓ ${n} / ${t} selected`,playTitle:`${icon('note')} Playback mode:`,
+      tempoTitle:`${icon('drum')} Rhythm:`,tempoFast:'Eighth notes (fast)',tempoSlow:'Quarter notes (slow)',
       harmonic:'Harmonic (simultaneous)',arpeggio:'Arpeggio (sequential)',
       progModeTitle:`${icon('score')} Exercise:`,progModeId:'Identify progression',progModeFunc:'Harmonic function',
       regTitle:`${icon('piano')} Register:`,regLow:'Low (C3)',regMid:'Mid (C4)',regHigh:'High (C5)',
@@ -1503,7 +1505,7 @@ const customSettings = {
     funcMode:false, funcSel: [...harmonicFunctions.defaultUnlocked], funcMajor:true, funcMinor:false,
     regLow:false, regMid:true, regHigh:false
   },
-  escalas:     { selected: musicData.escalas.map(x => x.name) },
+  escalas:     { selected: musicData.escalas.map(x => x.name), tempo:'eighth' }, // 'eighth' (rápido, actual) | 'quarter' (lento, doble duración)
   notas:       {
     selected: musicData.notas.filter(n => [0,2,4,5,7,9,11].includes(n.semitones)).map(n => n.name),
     mode: 'diatonica',
@@ -2073,9 +2075,12 @@ function playStudyItem(item) {
     const root = Math.floor(Math.random() * 12);
     const up = item.intervals;
     const down = [...(item.descIntervals || item.intervals)].reverse();
+    const step = customSettings.escalas.tempo === 'quarter' ? 500 : 250; // negras (lento) vs corcheas (rápido, original)
+    const turn = step + 50; // pausa breve antes de bajar
+    const dur = (step * 0.85 / 1000).toFixed(2);
     [...up, ...down].forEach((s, i) => {
-      const delay = i < up.length ? i * 250 : (up.length * 250 + 300 + (i - up.length) * 250);
-      t(delay, getFreq(s + root), '0.3');
+      const delay = i < up.length ? i * step : (up.length * step + turn + (i - up.length) * step);
+      t(delay, getFreq(s + root), dur);
     });
   } else if (currentMode === 'notas') {
     const ro = 0; // referencia siempre en Do (C4) en modo estudio
@@ -2237,6 +2242,17 @@ function updateSettingsPanel() {
         </div>
       </div>`;
     }
+    if (currentMode === 'escalas') {
+      const se2 = customSettings.escalas;
+      extraSections += `
+      <div class="settings-section">
+        <h4>${sg.tempoTitle}</h4>
+        <div class="toggle-group">
+          <button class="toggle-btn ${se2.tempo==='eighth'?'active':''}" onclick="toggleEscalaTempo('eighth')">${sg.tempoFast}</button>
+          <button class="toggle-btn ${se2.tempo==='quarter'?'active':''}" onclick="toggleEscalaTempo('quarter')">${sg.tempoSlow}</button>
+        </div>
+      </div>`;
+    }
     let lead = '';
     if (currentMode === 'progresiones') {
       const sp = customSettings.progresiones;
@@ -2334,6 +2350,10 @@ function toggleSeptimaMode(mode) {
   customSettings.septimas[mode] = !customSettings.septimas[mode];
   if (!customSettings.septimas.harmonic && !customSettings.septimas.arpeggio) customSettings.septimas[mode] = true;
   updateSettingsPanel(); nextQuestion(false);
+}
+function toggleEscalaTempo(tempo) {
+  customSettings.escalas.tempo = tempo;
+  updateSettingsPanel();
 }
 function setProgFuncMode(on) {
   customSettings.progresiones.funcMode = on;
@@ -2560,7 +2580,7 @@ async function playSound() {
     });
   } else if (currentMode === 'escalas') {
     const ko = currentQuestion.keyOffset || 0;
-    const gap = 380;
+    const gap = customSettings.escalas.tempo === 'quarter' ? 760 : 380; // negras (lento) vs corcheas (rápido, igual que antes)
     const ivs = currentQuestion.intervals;
     ivs.forEach((s, i) => {
       const freq = getFreq(s + ko);
