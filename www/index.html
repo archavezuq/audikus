@@ -840,11 +840,11 @@ window.addEventListener('popstate', function() {
 const MIC_MODES = new Set(['entonacion','entonAcordes','entonEscalas']);
 
 const COMBO_LABELS = {
-  2:'Bravo', 3:'Con brio', 4:'Brillante', 5:'Appassionato 🎵',
-  6:'Con fuoco 🔥', 7:'Virtuoso', 8:'Bravissimo ✨', 9:'Prodigioso',
-  10:'Magnifico 🎶', 11:'Impetuoso', 12:'Straordinario 🎺',
-  13:'Espressivo', 14:'Ardente 🔥', 15:'Leggendario 🏆',
-  18:'Sublime ⭐', 20:'Divino 🌟'
+  2:'Bravo', 3:'Con brio', 4:'Brillante', 5:()=>`Appassionato ${icon('note')}`,
+  6:()=>`Con fuoco ${icon('flame')}`, 7:'Virtuoso', 8:()=>`Bravissimo ${icon('sparkle')}`, 9:'Prodigioso',
+  10:()=>`Magnifico ${icon('notes')}`, 11:'Impetuoso', 12:()=>`Straordinario ${icon('horn')}`,
+  13:'Espressivo', 14:()=>`Ardente ${icon('flame')}`, 15:()=>`Leggendario ${icon('trophy')}`,
+  18:()=>`Sublime ${icon('star')}`, 20:()=>`Divino ${icon('starBurst')}`
 };
 
 function playFeedback(type, streak) {
@@ -852,11 +852,12 @@ function playFeedback(type, streak) {
 }
 
 function showComboLabel(streak) {
-  const label = COMBO_LABELS[streak];
-  if (!label) return;
+  const entry = COMBO_LABELS[streak];
+  if (!entry) return;
+  const label = typeof entry === 'function' ? entry() : entry;
   const el = document.createElement('div');
   el.style.cssText = 'position:fixed;top:28%;left:50%;transform:translateX(-50%) scale(0.8);background:linear-gradient(135deg,var(--primary),#9c5cff);color:#fff;padding:10px 24px;border-radius:20px;font-size:1.05em;font-weight:800;z-index:999;pointer-events:none;white-space:nowrap;animation:popIn 0.35s ease forwards;box-shadow:0 4px 20px rgba(108,99,255,0.5);';
-  el.textContent = label;
+  el.innerHTML = label;
   document.body.appendChild(el);
   setTimeout(() => { el.style.transition='opacity 0.4s,transform 0.4s'; el.style.opacity='0'; el.style.transform='translateX(-50%) scale(0.9)'; setTimeout(()=>el.remove(),400); }, 1300);
 }
@@ -1006,7 +1007,7 @@ const ui = {
     analysisStrong:(cat,pct,item)=>`${icon('check',16,'var(--success)')} <strong>Punto fuerte:</strong> ${cat} — ${pct}% de aciertos${item?`, especialmente <em>${item}</em>`:''}.`,
     analysisDiff:(name,cat,pct,conf,confN)=>`${icon('warn',16,'var(--warning)')} <strong>Mayor dificultad:</strong> <em>${name}</em> en ${cat} (${pct}% de aciertos)${conf?` — lo confundes con <strong>${conf}</strong> (${confN} veces)`:''}. `,
     analysisRec:(cat)=>`${icon('target')} <strong>Recomendación:</strong> Dedica tu próxima sesión a <strong>${cat}</strong> — es el área con mayor margen de mejora.`,
-    analysisConf:(cat,a,b,n)=>`🔄 <strong>Confusión frecuente:</strong> En ${cat} confundes <strong>${a}</strong> con <strong>${b}</strong> (${n} veces).`,
+    analysisConf:(cat,a,b,n)=>`${icon('next')} <strong>Confusión frecuente:</strong> En ${cat} confundes <strong>${a}</strong> con <strong>${b}</strong> (${n} veces).`,
     analysisBased:(n)=>`Basado en ${n} respuestas registradas.`,
     cats:{intervalos:'Intervalos',triadas:'Tríadas',inversiones:'Inversiones',septimas:'Acordes con Séptima',progresiones:'Progresiones',escalas:'Escalas',notas:'Nota Absoluta',alturas:'Alturas',entonacion:'Entonación',entonAcordes:'Entonación Acordes',entonEscalas:'Entonación Escalas'},
     sAlturas:{
@@ -1112,7 +1113,7 @@ const ui = {
     analysisStrong:(cat,pct,item)=>`${icon('check',16,'var(--success)')} <strong>Strong point:</strong> ${cat} — ${pct}% accuracy${item?`, especially <em>${item}</em>`:''}.`,
     analysisDiff:(name,cat,pct,conf,confN)=>`${icon('warn',16,'var(--warning)')} <strong>Biggest difficulty:</strong> <em>${name}</em> in ${cat} (${pct}% accuracy)${conf?` — you confuse it with <strong>${conf}</strong> (${confN} times)`:''}. `,
     analysisRec:(cat)=>`${icon('target')} <strong>Recommendation:</strong> Dedicate your next session to <strong>${cat}</strong> — it's the area with the most room for improvement.`,
-    analysisConf:(cat,a,b,n)=>`🔄 <strong>Frequent confusion:</strong> In ${cat} you confuse <strong>${a}</strong> with <strong>${b}</strong> (${n} times).`,
+    analysisConf:(cat,a,b,n)=>`${icon('next')} <strong>Frequent confusion:</strong> In ${cat} you confuse <strong>${a}</strong> with <strong>${b}</strong> (${n} times).`,
     analysisBased:(n)=>`Based on ${n} recorded answers.`,
     cats:{intervalos:'Intervals',triadas:'Triads',inversiones:'Inversions',septimas:'Seventh Chords',progresiones:'Progressions',escalas:'Scales',notas:'Absolute Pitch',alturas:'Pitch Height',entonacion:'Intonation',entonAcordes:'Chord Intonation',entonEscalas:'Scale Intonation'},
     sAlturas:{
@@ -2673,7 +2674,7 @@ function showFuncUnlockModal(name) {
   modal.className = 'milestone-modal-bg';
   modal.innerHTML = `
     <div class="milestone-modal">
-      <div style="width:72px;height:72px;margin:0 auto 14px;border-radius:50%;border:2.5px solid var(--primary);background:rgba(108,99,255,0.18);display:grid;place-items:center;font-size:32px;">🔓</div>
+      <div style="width:72px;height:72px;margin:0 auto 14px;border-radius:50%;border:2.5px solid var(--primary);background:rgba(108,99,255,0.18);display:grid;place-items:center;">${icon('unlock',32,'var(--primary)')}</div>
       <div style="font-size:13px;color:var(--primary);font-weight:800;letter-spacing:.04em;margin-bottom:4px;">${L.funcUnlockTitle}</div>
       <div style="font-size:15px;line-height:1.5;margin-bottom:20px;">${L.funcUnlockBody(dn(name))}</div>
       <button onclick="document.getElementById('funcUnlockModal').remove()" style="background:var(--primary);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">${L.funcUnlockBtn}</button>
@@ -4420,7 +4421,7 @@ function showMilestoneModal(days) {
       <div style="width:72px;height:72px;margin:0 auto 14px;border-radius:50%;border:2.5px solid ${composer.tier};background:${composer.tier}22;display:grid;place-items:center;">
         ${composerPortrait(composer.id)}
       </div>
-      <div style="font-size:13px;color:${composer.tier};font-weight:800;letter-spacing:.04em;margin-bottom:4px;">🔥 ${days} DÍAS</div>
+      <div style="font-size:13px;color:${composer.tier};font-weight:800;letter-spacing:.04em;margin-bottom:4px;">${icon('flame',14,composer.tier)} ${days} DÍAS</div>
       <div style="font-size:17px;font-weight:800;margin-bottom:8px;">${composer.name}</div>
       <div style="font-size:12px;color:rgba(232,230,245,0.75);line-height:1.55;margin-bottom:20px;">"${composer.fact}"</div>
       <button onclick="document.getElementById('milestoneModal').remove()" style="background:${composer.tier};color:#0c0a1f;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">¡A seguir practicando!</button>
@@ -4487,7 +4488,7 @@ function renderRachaScreen() {
     <div style="margin-top:14px;background:var(--card);border-radius:18px;padding:14px 16px;border:1px solid var(--border);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="font-size:13px;font-weight:700;">${currentLang==='es'?'Próximo hito':'Next milestone'}</div>
-        <div style="font-size:12px;color:#f5b54a;font-weight:700;">🏆 ${nextMs} ${currentLang==='es'?'días':'days'}</div>
+        <div style="font-size:12px;color:#f5b54a;font-weight:700;">${icon('trophy',14,'#f5b54a')} ${nextMs} ${currentLang==='es'?'días':'days'}</div>
       </div>
       <div style="height:10px;background:rgba(255,255,255,0.08);border-radius:999px;overflow:hidden;">
         <div class="milestone-bar-fill" style="width:${pct}%;height:100%;border-radius:999px;background:linear-gradient(90deg,#f5b54a,#ff8a3d);"></div>
