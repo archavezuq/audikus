@@ -1404,7 +1404,10 @@ const musicData = {
   ],
   escalas: [
     { name:'Mayor',             intervals:[0,2,4,5,7,9,11,12], root:0  }, { name:'Menor Natural',    intervals:[0,2,3,5,7,8,10,12], root:9  },
-    { name:'Menor Armónica',    intervals:[0,2,3,5,7,8,11,12], root:9  }, { name:'Menor Melódica',   intervals:[0,2,3,5,7,9,11,12], root:9  },
+    { name:'Menor Armónica',    intervals:[0,2,3,5,7,8,11,12], root:9  },
+    // Menor Melódica: sube con 6ª/7ª elevadas, baja como menor natural (convención clásica) —
+    // descIntervals es la forma "ascendente" de la bajada, que playStudyItem invierte igual que intervals.
+    { name:'Menor Melódica',   intervals:[0,2,3,5,7,9,11,12], descIntervals:[0,2,3,5,7,8,10,12], root:9  },
     { name:'Pentatónica Mayor', intervals:[0,2,4,7,9,12],      root:0  }, { name:'Pentatónica Menor',intervals:[0,3,5,7,10,12],     root:9  },
     { name:'Blues',             intervals:[0,3,5,6,7,10,12],   root:9  }, { name:'Dórica',           intervals:[0,2,3,5,7,9,10,12], root:2  },
     { name:'Frigio',            intervals:[0,1,3,5,7,8,10,12], root:4  }, { name:'Lidio',             intervals:[0,2,4,6,7,9,11,12], root:5  },
@@ -2068,7 +2071,7 @@ function playStudyItem(item) {
   } else if (currentMode === 'escalas') {
     const root = item.root || 0;
     const up = item.intervals;
-    const down = [...item.intervals].reverse();
+    const down = [...(item.descIntervals || item.intervals)].reverse();
     [...up, ...down].forEach((s, i) => {
       const delay = i < up.length ? i * 250 : (up.length * 250 + 300 + (i - up.length) * 250);
       t(delay, getFreq(s + root), '0.3');
@@ -3793,7 +3796,7 @@ function getResponse(question) {
     return '🎶 <strong>Menor Armónica</strong><br><br>Patrón: T-st-T-T-st-T½-st<br><br>En La: La-Si-Do-Re-Mi-Fa-Sol♯-La<br>• 7ª elevada ½ tono → tensión más fuerte hacia la tónica<br>• Sonido exótico, oriental<br>• Muy usada en clásica, flamenca y metal 🎸';
 
   if (has('menor melod','melódica','melodica'))
-    return '🎶 <strong>Menor Melódica</strong><br><br>Patrón ascendente: T-st-T-T-T-T-st<br><br>En La: La-Si-Do-Re-Mi-Fa♯-Sol♯-La<br>• 6ª y 7ª elevadas al subir<br>• En jazz siempre se usa la forma ascendente 🎹';
+    return `${icon('notes')} <strong>Menor Melódica</strong><br><br>Sube con 6ª y 7ª elevadas, baja como menor natural (con 6ª y 7ª en su forma original) — es la convención clásica, y así se escucha en Modo Aprender.<br><br>En La:<br>• Sube: La-Si-Do-Re-Mi-Fa♯-Sol♯-La<br>• Baja: La-Sol-Fa-Mi-Re-Do-Si-La<br><br>• En jazz es común usar la forma ascendente en ambas direcciones (una sola escala, sin alterar al bajar) — una simplificación distinta a la clásica`;
 
   if (has('pentatonica','pentatónica'))
     return '🎶 <strong>Pentatónicas</strong><br><br>Solo 5 notas, sin semitonos conflictivos:<br><br><strong>Mayor:</strong> Do-Re-Mi-Sol-La<br><strong>Menor:</strong> La-Do-Re-Mi-Sol<br><br>• Cualquier nota suena bien sobre cualquier acorde<br>• Base de rock, blues, folk y música asiática 🎸';
@@ -3994,7 +3997,7 @@ function getResponseEN(question) {
   if (has('harmonic minor'))
     return '🎶 <strong>Harmonic Minor</strong><br><br>Pattern: W-H-W-W-H-WH-H<br><br>In A: A-B-C-D-E-F-G♯-A<br>• Raised 7th → stronger pull to tonic<br>• Exotic, oriental sound<br>• Common in classical, flamenco and metal 🎸';
   if (has('melodic minor'))
-    return '🎶 <strong>Melodic Minor</strong><br><br>Ascending pattern: W-H-W-W-W-W-H<br><br>In A: A-B-C-D-E-F♯-G♯-A<br>• 6th and 7th raised ascending<br>• In jazz always use the ascending form 🎹';
+    return `${icon('notes')} <strong>Melodic Minor</strong><br><br>Ascends with raised 6th and 7th, descends as natural minor (6th and 7th back to their original form) — the classical convention, and how it sounds in Study Mode.<br><br>In A:<br>• Up: A-B-C-D-E-F♯-G♯-A<br>• Down: A-G-F-E-D-C-B-A<br><br>• In jazz it's common to use the ascending form both ways (one single scale, unaltered going down) — a different simplification from the classical one`;
   if (has('pentatonic'))
     return '🎶 <strong>Pentatonic Scales</strong><br><br>Only 5 notes, no conflicting semitones:<br><br><strong>Major:</strong> C-D-E-G-A<br><strong>Minor:</strong> A-C-D-E-G<br><br>• Any note sounds good over any chord<br>• Foundation of rock, blues, folk and Asian music 🎸';
   if (has('blues scale','blues'))
