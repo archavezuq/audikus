@@ -566,7 +566,7 @@
     <button onclick="setOverlayLang('es')" id="overlayBtnEs" style="background:#6C63FF;color:white;border:none;padding:12px 26px;font-size:1em;font-weight:bold;letter-spacing:2px;border-radius:10px;cursor:pointer;">ES</button>
     <button onclick="setOverlayLang('en')" id="overlayBtnEn" style="background:#6C63FF;color:white;border:none;padding:12px 26px;font-size:1em;font-weight:bold;letter-spacing:2px;border-radius:10px;cursor:pointer;">EN</button>
   </div>
-  <button class="btn btn-success" id="startBtn" onclick="handleStart()">▶ INICIAR</button>
+  <button class="btn btn-success" id="startBtn" onclick="handleStart()">INICIAR</button>
 </div>
 
 <div class="app-shell" id="appShell">
@@ -599,7 +599,7 @@
           <div style="margin-bottom:14px;"><img src="img/modo-practica.svg" style="width:56px;height:56px;"></div>
           <div id="practiceTitle" style="font-size:16px;font-weight:700;margin-bottom:8px;">Practicar</div>
           <div id="practiceSub" style="font-size:12px;color:var(--text-muted);margin-bottom:22px;line-height:1.6;">Selecciona un modo arriba y presiona Comenzar</div>
-          <button class="btn btn-success" onclick="openExerciseOverlay();setViewMode('test')">▶ Comenzar</button>
+          <button class="btn btn-success" onclick="openExerciseOverlay();setViewMode('test')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;flex-shrink:0"><path d="M8 5.5v13l10-6.5z"></path></svg> Comenzar</button>
         </div>
       </div>
     </div>
@@ -629,8 +629,8 @@
           <span style="font-size:12px;color:var(--primary);font-weight:700;">±50 cents</span>
         </div>
         <div class="app-footer">
-          <button class="btn" style="width:100%;margin-bottom:12px;background:var(--card);border:1px solid var(--border);font-size:0.85em;" onclick="restartTutorial()">📖 Ver tutorial</button>
-          <button class="btn" style="width:100%;margin-bottom:16px;background:var(--card);border:1px solid var(--border);font-size:0.85em;" onclick="changeName()">✏️ Cambiar nombre</button>
+          <button class="btn" style="width:100%;margin-bottom:12px;background:var(--card);border:1px solid var(--border);font-size:0.85em;" onclick="restartTutorial()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;flex-shrink:0"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5c-3.5-.5-6.5 0-8.5 1.5z"></path><path d="M12 6.5v13"></path></svg> Ver tutorial</button>
+          <button class="btn" style="width:100%;margin-bottom:16px;background:var(--card);border:1px solid var(--border);font-size:0.85em;" onclick="changeName()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;flex-shrink:0"><path d="M15 4.5l4.5 4.5L9 19.5H4.5V15z"></path><path d="M12.5 7l4.5 4.5"></path></svg> Cambiar nombre</button>
           <p>Audikus — Oído Musical<br>Mtro. Andrés Chávez · Educación Musical<br><a href="mailto:andreschbflute@gmail.com" style="color:var(--text-muted);text-decoration:none;">andreschbflute@gmail.com</a> · © 2025</p>
         </div>
       </div>
@@ -712,7 +712,7 @@
       <div class="play-controls">
         <button class="btn" id="btnPlay" onclick="playSound()"><img src="img/bocina.svg" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;"> Reproducir</button>
         <button class="btn btn-warning" id="btnNext" onclick="nextQuestion()"><img src="img/siguiente.svg" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;"> Siguiente</button>
-        <button class="btn btn-danger"  id="btnReset" onclick="resetScore()">↺ Reiniciar</button>
+        <button class="btn btn-danger"  id="btnReset" onclick="resetScore()">Reiniciar</button>
       </div>
       <div id="optionsContainer" class="options-grid"></div>
       <div id="feedback" class="feedback"></div>
@@ -941,7 +941,7 @@ const ui = {
     appTitle:'Audikus — Oído Musical',
     overlaySubtitle:'Presiona para activar el sonido y comenzar',
     overlayBtn:'▶ INICIAR',
-    btnStudy:'📚 Aprender', btnTest:'✏️ Practicar', btnProgress:'📊 Mi Progreso',
+    btnStudy:'Aprender', btnTest:'Practicar', btnProgress:'Mi Progreso',
     navLearn:'Aprender', navPractice:'Practicar', navRacha:'Racha', navCamino:'Camino', navProgress:'Progreso', navSettings:'Ajustes',
     practiceTitle:'Practicar', practiceSub:'Selecciona un modo arriba y presiona Comenzar',
     settingsScreen:'Ajustes', segStudy:'Aprender', segTest:'Practicar',
@@ -973,7 +973,7 @@ const ui = {
     sInt:{
       selTitle:'📋 Intervalos a practicar:',selInfo:(n,t)=>`✓ ${n} / ${t} seleccionados`,
       typeTitle:'🎵 Tipo:',melodic:'Melódico (sucesivo)',harmonic:'Armónico (simultáneo)',
-      dirTitle:'↕️ Dirección (melódico):',ascending:'↑ Ascendente',descending:'↓ Descendente',
+      dirTitle:`${icon('updown')} Dirección (melódico):`,ascending:`${icon('up')} Ascendente`,descending:`${icon('down')} Descendente`,
       regTitle:'🎹 Registro:',low:'Grave (C3)',mid:'Medio (C4)',high:'Agudo (C5)'
     },
     sNotas:{
@@ -1001,7 +1001,7 @@ const ui = {
     suggestions:'💡 Sugerencias',
     suggInverse:(cat,a,b,n)=>`En <strong>${cat}</strong> confundes <strong>${a}</strong> con su inverso <strong>${b}</strong> (${n} veces). Son complementarios — practica en modo armónico para diferenciarlos.`,
     suggError:(cat,a,b,n)=>`En <strong>${cat}</strong> confundes frecuentemente <strong>${a}</strong> con <strong>${b}</strong> (${n} veces). Enfoca tus próximas sesiones en este ítem.`,
-    btnDelete:'🗑️ Borrar todo el progreso',
+    btnDelete:`${icon('trash')} Borrar todo el progreso`,
     confirmDelete:'¿Seguro que quieres borrar todo tu historial de progreso?',
     analysisTitle:'🎯 Tu Análisis Musical',
     analysisStrong:(cat,pct,item)=>`✅ <strong>Punto fuerte:</strong> ${cat} — ${pct}% de aciertos${item?`, especialmente <em>${item}</em>`:''}.`,
@@ -1048,7 +1048,7 @@ const ui = {
     appTitle:'Audikus — Ear Training',
     overlaySubtitle:'Tap to activate sound and start',
     overlayBtn:'▶ START',
-    btnStudy:'📚 Learn', btnTest:'✏️ Practice', btnProgress:'📊 My Progress',
+    btnStudy:'Learn', btnTest:'Practice', btnProgress:'My Progress',
     navLearn:'Learn', navPractice:'Practice', navRacha:'Streak', navCamino:'Path', navProgress:'Progress', navSettings:'Settings',
     practiceTitle:'Practice', practiceSub:'Select a mode above and press Start',
     settingsScreen:'Settings', segStudy:'Learn', segTest:'Practice',
@@ -1080,7 +1080,7 @@ const ui = {
     sInt:{
       selTitle:'📋 Intervals to practice:',selInfo:(n,t)=>`✓ ${n} / ${t} selected`,
       typeTitle:'🎵 Type:',melodic:'Melodic (sequential)',harmonic:'Harmonic (simultaneous)',
-      dirTitle:'↕️ Direction (melodic):',ascending:'↑ Ascending',descending:'↓ Descending',
+      dirTitle:`${icon('updown')} Direction (melodic):`,ascending:`${icon('up')} Ascending`,descending:`${icon('down')} Descending`,
       regTitle:'🎹 Register:',low:'Low (C3)',mid:'Mid (C4)',high:'High (C5)'
     },
     sNotas:{
@@ -1108,7 +1108,7 @@ const ui = {
     suggestions:'💡 Suggestions',
     suggInverse:(cat,a,b,n)=>`In <strong>${cat}</strong> you confuse <strong>${a}</strong> with its inverse <strong>${b}</strong> (${n} times). They are complementary — practice in harmonic mode to distinguish them.`,
     suggError:(cat,a,b,n)=>`In <strong>${cat}</strong> you frequently confuse <strong>${a}</strong> with <strong>${b}</strong> (${n} times). Focus your next sessions on this item.`,
-    btnDelete:'🗑️ Delete all progress',
+    btnDelete:`${icon('trash')} Delete all progress`,
     confirmDelete:'Are you sure you want to delete all your progress history?',
     analysisTitle:'🎯 Your Musical Analysis',
     analysisStrong:(cat,pct,item)=>`✅ <strong>Strong point:</strong> ${cat} — ${pct}% accuracy${item?`, especially <em>${item}</em>`:''}.`,
@@ -1541,14 +1541,14 @@ function initStartOverlay() {
   if (isFirst) {
     if (gr) gr.textContent = currentLang === 'es' ? '¿Cómo te llamas?' : 'What\'s your name?';
     if (nameWrap) nameWrap.style.display = 'block';
-    if (btn) btn.textContent = currentLang === 'es' ? '▶ CONTINUAR' : '▶ CONTINUE';
+    if (btn) btn.innerHTML = icon('play') + (currentLang === 'es' ? ' CONTINUAR' : ' CONTINUE');
   } else {
     const greetings = currentLang === 'es'
       ? [`¡Hola de nuevo, ${userName}!`, `Bienvenido, ${userName}`, `¡A practicar, ${userName}!`]
       : [`Welcome back, ${userName}!`, `Good to see you, ${userName}!`, `Let's train, ${userName}!`];
     if (gr) gr.textContent = greetings[new Date().getDay() % greetings.length];
     if (nameWrap) nameWrap.style.display = 'none';
-    if (btn) btn.textContent = currentLang === 'es' ? '▶ INICIAR' : '▶ START';
+    if (btn) btn.innerHTML = icon('play') + (currentLang === 'es' ? ' INICIAR' : ' START');
   }
 }
 
@@ -1694,7 +1694,7 @@ function updateStaticText() {
   // Overlay
   document.querySelector('#startOverlay h2').innerHTML = `<img src="img/audikus_icon.png" alt="Audikus" style="height:48px;vertical-align:middle;margin-right:10px;border-radius:10px;"> ${L.appTitle}`;
   document.querySelector('#startOverlay p').textContent = L.overlaySubtitle;
-  document.querySelector('#startOverlay .btn-success').textContent = L.overlayBtn;
+  document.querySelector('#startOverlay .btn-success').innerHTML = icon('play') + ' ' + L.overlayBtn.replace(/^[^\s]+\s/,'');
   updateOverlayLangButtons();
   // Header
   const hdrEl = document.getElementById('headerTitle');
@@ -1703,7 +1703,7 @@ function updateStaticText() {
   ['langBtn','langBtn2'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = currentLang === 'es' ? 'EN' : 'ES'; });
   // Settings title
   const stEl = document.getElementById('settingsTitle');
-  if (stEl) stEl.textContent = L.settingsTitle;
+  if (stEl) stEl.innerHTML = icon('sliders') + ' ' + L.settingsTitle.replace(/^[^\s]+\s/,'');
   // Progress title
   const prEl = document.getElementById('progressAreaTitle');
   if (prEl) prEl.innerHTML = '<img src="img/mi-progreso.svg" style="width:22px;height:22px;vertical-align:middle;margin-right:6px;"> ' + L.progressTitle.replace(/^[^\s]+\s/,'');
@@ -1720,7 +1720,7 @@ function updateStaticText() {
   const pc2 = document.getElementById('btnReset');
   if (pc0) pc0.innerHTML = '<img src="img/bocina.svg" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;"> ' + L.btnPlay.replace(/^[^\s]+\s/,'');
   if (pc1) pc1.innerHTML = '<img src="img/siguiente.svg" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;"> ' + L.btnNext.replace(/^[^\s]+\s/,'');
-  if (pc2) pc2.innerHTML = '↺ '  + L.btnReset.replace(/^[^\s]+\s/,'');
+  if (pc2) pc2.innerHTML = icon('restart') + ' '  + L.btnReset.replace(/^[^\s]+\s/,'');
   // Nav labels
   ['navLabelLearn','navLabelPractice','navLabelRacha','navLabelCamino','navLabelProgress','navLabelSettings'].forEach((id,i) => {
     const el = document.getElementById(id);
@@ -1823,12 +1823,12 @@ function renderModeCards() {
   learnCards.innerHTML = modes.map(m => {
     const data = L.cards[m] || { title: m, sub: '' };
     const img  = CARD_IMGS[m];
-    const icon = img
+    const modeIcon = img
       ? `<div class="mode-icon"><img src="${img}" alt="${data.title}" onerror="this.style.display='none'" style="width:40px;height:40px;"></div>`
-      : `<div class="mode-icon" style="margin-bottom:8px;">${m==='alturas'?'<span style="font-size:2em;line-height:1;">↑↓</span>':'<img src="img/entonacion.svg" style="width:40px;height:40px;">'}</div>`;
+      : `<div class="mode-icon" style="margin-bottom:8px;">${m==='alturas'?icon('updown',32):'<img src="img/entonacion.svg" style="width:40px;height:40px;">'}</div>`;
     const active = m === currentMode ? ' active' : '';
     return `<div class="mode-card${active}" data-mode="${m}" onclick="selectModeCard('${m}')">
-      ${icon}
+      ${modeIcon}
       <div class="mode-title">${data.title}</div>
       <div class="mode-sub">${data.sub}</div>
     </div>`;
@@ -1928,15 +1928,15 @@ function renderStudyMode() {
     tip.innerHTML = `<p style="font-size:0.88em;line-height:1.7;color:var(--text-muted);margin:0;">${sa.tipAlt}</p>`;
     container.appendChild(tip);
     [
-      { label: sa.ansLow, sym:'↓', desc: sa.descGrave, octave: 2 },
-      { label: sa.ansHigh, sym:'↑', desc: sa.descAgudo, octave: 6 }
-    ].forEach(({label, sym, desc, octave}) => {
+      { label: sa.ansLow, ic:'down', desc: sa.descGrave, octave: 2 },
+      { label: sa.ansHigh, ic:'up', desc: sa.descAgudo, octave: 6 }
+    ].forEach(({label, ic, desc, octave}) => {
       const card = document.createElement('div');
       card.style.cssText = 'background:var(--card-hover);padding:22px;border-radius:12px;border:2px solid rgba(108,99,255,0.3);cursor:pointer;transition:all 0.3s;text-align:center;';
       card.onmouseover = () => { card.style.transform='scale(1.02)'; card.style.borderColor='var(--primary)'; };
       card.onmouseout  = () => { card.style.transform='scale(1)'; card.style.borderColor='rgba(108,99,255,0.3)'; };
-      card.innerHTML = `<div style="font-size:2.5em;margin-bottom:6px;">${sym}</div>
-        <div style="font-size:1.1em;font-weight:bold;color:var(--primary);margin-bottom:8px;">${label}</div>
+      card.innerHTML = `<div style="margin-bottom:6px;">${icon(ic,40)}</div>
+        <div style="font-size:1.1em;font-weight:bold;color:var(--primary);margin-bottom:8px;">${label.replace(/\s*[↑↓]\s*$/,'')}</div>
         <div style="font-size:0.82em;color:var(--text-muted);margin-bottom:12px;">${desc}</div>
         <div style="margin:6px 0;"><img src="img/bocina-outline.svg" style="width:32px;height:32px;"></div>`;
       card.onclick = () => { synth.releaseAll(); synth.triggerAttackRelease(getFreq(0, octave), '0.8', Tone.now()); };
@@ -1968,14 +1968,14 @@ function renderStudyMode() {
         if (showAsc && refMidi + item.semitones <= 84) {
           var tgt = refMidi + item.semitones;
           result.push('<div class="study-card" onclick="playEntonacionStudy(' + item.semitones + ',' + refMidi + ')">' +
-            '<div class="study-card-title">' + dn(item.name) + ' ↑</div>' +
+            '<div class="study-card-title">' + dn(item.name) + ' ' + icon('up') + '</div>' +
             '<div style="font-size:0.82em;color:var(--text-muted);">' + midiNoteName(refMidi) + ' → ' + midiNoteName(tgt) + '</div>' +
             '<div style="font-size:0.72em;color:var(--text-muted);margin-top:2px;">+' + item.semitones + ' st</div></div>');
         }
         if (showDesc && refMidi - item.semitones >= 36) {
           var tgtD = refMidi - item.semitones;
           result.push('<div class="study-card" onclick="playEntonacionStudy(' + (-item.semitones) + ',' + refMidi + ')">' +
-            '<div class="study-card-title">' + dn(item.name) + ' ↓</div>' +
+            '<div class="study-card-title">' + dn(item.name) + ' ' + icon('down') + '</div>' +
             '<div style="font-size:0.82em;color:var(--text-muted);">' + midiNoteName(refMidi) + ' → ' + midiNoteName(tgtD) + '</div>' +
             '<div style="font-size:0.72em;color:var(--text-muted);margin-top:2px;">−' + item.semitones + ' st</div></div>');
         }
@@ -2016,8 +2016,8 @@ function renderStudyMode() {
       if (ref) {
         html += `<div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;text-align:left;">
           <div style="font-size:0.7em;color:var(--warning);font-weight:bold;margin-bottom:5px;">${tx('refLabel')}</div>
-          ${ref.asc  ? `<div style="font-size:0.72em;color:var(--text-muted);margin-bottom:3px;">↑ <em>${ref.asc.song}</em></div>`  : ''}
-          ${ref.desc ? `<div style="font-size:0.72em;color:var(--text-muted);">↓ <em>${ref.desc.song}</em></div>` : ''}
+          ${ref.asc  ? `<div style="font-size:0.72em;color:var(--text-muted);margin-bottom:3px;">${icon('up')} <em>${ref.asc.song}</em></div>`  : ''}
+          ${ref.desc ? `<div style="font-size:0.72em;color:var(--text-muted);">${icon('down')} <em>${ref.desc.song}</em></div>` : ''}
         </div>`;
       }
     }
@@ -2185,10 +2185,10 @@ function updateSettingsPanel() {
         <p style="margin:8px 0 0;font-size:0.85em;color:var(--text-muted);">Ref: ${midiNoteName(midis[ec.voiceRange])}</p>
       </div>
       <div class="settings-section">
-        <h4>↕️ ${currentLang==='es'?'Dirección':'Direction'}:</h4>
+        <h4>${icon('updown')} ${currentLang==='es'?'Dirección':'Direction'}:</h4>
         <div class="toggle-group">
-          <button class="toggle-btn ${ec.ascending?'active':''}" onclick="toggleEntonDir('ascending')">${currentLang==='es'?'↑ Ascendente':'↑ Ascending'}</button>
-          <button class="toggle-btn ${ec.descending?'active':''}" onclick="toggleEntonDir('descending')">${currentLang==='es'?'↓ Descendente':'↓ Descending'}</button>
+          <button class="toggle-btn ${ec.ascending?'active':''}" onclick="toggleEntonDir('ascending')">${icon('up')} ${currentLang==='es'?'Ascendente':'Ascending'}</button>
+          <button class="toggle-btn ${ec.descending?'active':''}" onclick="toggleEntonDir('descending')">${icon('down')} ${currentLang==='es'?'Descendente':'Descending'}</button>
         </div>
       </div>
       <div class="settings-section">
@@ -2928,7 +2928,7 @@ function renderEntonacionUI() {
   const c = document.getElementById('optionsContainer');
   const se = ui[currentLang].sEntonacion;
   const q = currentQuestion;
-  const dirArrow = q.direction === 'ascending' ? '↑' : '↓';
+  const dirArrow = icon(q.direction === 'ascending' ? 'up' : 'down');
   const targetName = midiNoteName(q.targetMidi);
   const refName = midiNoteName(q.refMidi);
   c.innerHTML = `
@@ -2936,10 +2936,10 @@ function renderEntonacionUI() {
       <div style="font-size:1.15em;color:var(--primary);margin-bottom:6px;">
         ${se.target} <strong>${dn(q.name)} ${dirArrow}</strong> ${se.from} <strong style="color:var(--warning);">${refName}</strong>
       </div>
-      <div style="color:var(--text-muted);font-size:0.82em;margin-bottom:14px;">🎯 ${targetName}</div>
+      <div style="color:var(--text-muted);font-size:0.82em;margin-bottom:14px;">${icon('target')} ${targetName}</div>
       <div style="display:flex;gap:12px;justify-content:center;margin-bottom:16px;">
-        <button class="btn" onclick="playEntonacionRef()">${se.btnListen}</button>
-        <button class="btn btn-success" id="singBtn" onclick="toggleSinging()">${se.btnSing}</button>
+        <button class="btn" onclick="playEntonacionRef()">${icon('play')} ${se.btnListen.replace(/^[^\s]+\s/,'')}</button>
+        <button class="btn btn-success" id="singBtn" onclick="toggleSinging()">${icon('mic')} ${se.btnSing.replace(/^[^\s]+\s/,'')}</button>
       </div>
       <div id="pitchMeter" style="background:var(--card-hover);border-radius:12px;padding:18px;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;">
         <div id="pitchDisplay" style="margin-bottom:4px;"><img src="img/entonacion.svg" style="width:28px;height:28px;opacity:0.5;"></div>
@@ -2971,7 +2971,7 @@ async function toggleSinging() {
     await MicPlugin.start();
     micStream = true;
     var singBtn = document.getElementById('singBtn');
-    if (singBtn) { singBtn.textContent = se.btnStop; singBtn.classList.add('singing-active'); }
+    if (singBtn) { singBtn.innerHTML = icon('stop') + ' ' + se.btnStop.replace(/^[^\s]+\s/,''); singBtn.classList.add('singing-active'); }
     var tol = customSettings.entonacion.tolerance;
     var targetMidi = currentQuestion.targetMidi;
     var holdStart = null;
@@ -3042,7 +3042,7 @@ function stopSinging() {
   micAnalyser = null;
   if (micContext) { try { micContext.close(); } catch(e){} micContext = null; }
   const singBtn = document.getElementById('singBtn');
-  if (singBtn) { singBtn.textContent = ui[currentLang].sEntonacion.btnSing; singBtn.classList.remove('singing-active'); }
+  if (singBtn) { const bs = ui[currentLang].sEntonacion.btnSing; singBtn.innerHTML = icon('mic') + ' ' + bs.replace(/^[^\s]+\s/,''); singBtn.classList.remove('singing-active'); }
 }
 
 // ==================== ENTONACIÓN SECUENCIAL (Acordes / Escalas) ====================
@@ -3086,14 +3086,14 @@ function renderEntonSeqUI() {
             style="background:none;border:2px solid var(--success);border-radius:50%;width:56px;height:56px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all 0.2s;">
             <img src="img/bocina.svg" style="width:28px;height:28px;">
           </button>
-          <div style="font-size:0.72em;color:var(--text-muted);margin-top:5px;">${se.btnListen}</div>
+          <div style="font-size:0.72em;color:var(--text-muted);margin-top:5px;">${se.btnListen.replace(/^[^\s]+\s/,'')}</div>
         </div>
         <div style="text-align:center;">
           <button id="singBtn" onclick="toggleSingingSeq()"
             style="background:none;border:2px solid var(--primary);border-radius:50%;width:72px;height:72px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all 0.2s;">
             <img src="${micIcon}" style="width:40px;height:40px;">
           </button>
-          <div style="font-size:0.72em;color:var(--text-muted);margin-top:5px;">${se.btnSing}</div>
+          <div style="font-size:0.72em;color:var(--text-muted);margin-top:5px;">${se.btnSing.replace(/^[^\s]+\s/,'')}</div>
         </div>
       </div>
       <div style="margin-top:16px;background:var(--card-hover);border-radius:12px;padding:14px;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;">
@@ -3131,7 +3131,7 @@ async function toggleSingingSeq() {
     await MicPlugin.start();
     micStream = true;
     const singBtn = document.getElementById('singBtn');
-    if (singBtn) { singBtn.textContent = se.btnStop; singBtn.classList.add('singing-active'); }
+    if (singBtn) { singBtn.innerHTML = icon('stop') + ' ' + se.btnStop.replace(/^[^\s]+\s/,''); singBtn.classList.add('singing-active'); }
     const tol = (customSettings[currentMode] || {}).tolerance || 50;
     seqNoteIdx = 0;
     let holdStart = null;
@@ -3202,7 +3202,7 @@ async function toggleSingingSeq() {
             renderEntonSeqUI();
             // Re-attach mic after re-render — buscamos el nuevo singBtn
             const newBtn = document.getElementById('singBtn');
-            if (newBtn) { newBtn.textContent = se.btnStop; newBtn.classList.add('singing-active'); }
+            if (newBtn) { newBtn.innerHTML = icon('stop') + ' ' + se.btnStop.replace(/^[^\s]+\s/,''); newBtn.classList.add('singing-active'); }
           }
         }
       } else {
