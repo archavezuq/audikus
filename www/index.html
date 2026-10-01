@@ -987,7 +987,7 @@ const ui = {
     },
     sGen:{
       selInfo:(n,t)=>`✓ ${n} / ${t} seleccionados`,playTitle:`${icon('note')} Modo de reproducción:`,
-      tempoTitle:`${icon('drum')} Ritmo:`,tempoFast:'Corcheas (rápido)',tempoSlow:'Negras (lento)',
+      tempoTitle:`${icon('drum')} Velocidad:`,tempoFast:'Rápido',tempoSlow:'Lento',
       harmonic:'Armónico (simultáneo)',arpeggio:'Arpegio (sucesivo)',
       progModeTitle:`${icon('score')} Ejercicio:`,progModeId:'Identificar progresión',progModeFunc:'Función armónica',
       regTitle:`${icon('piano')} Registro:`,regLow:'Grave (C3)',regMid:'Medio (C4)',regHigh:'Agudo (C5)',
@@ -1094,7 +1094,7 @@ const ui = {
     },
     sGen:{
       selInfo:(n,t)=>`✓ ${n} / ${t} selected`,playTitle:`${icon('note')} Playback mode:`,
-      tempoTitle:`${icon('drum')} Rhythm:`,tempoFast:'Eighth notes (fast)',tempoSlow:'Quarter notes (slow)',
+      tempoTitle:`${icon('drum')} Speed:`,tempoFast:'Fast',tempoSlow:'Slow',
       harmonic:'Harmonic (simultaneous)',arpeggio:'Arpeggio (sequential)',
       progModeTitle:`${icon('score')} Exercise:`,progModeId:'Identify progression',progModeFunc:'Harmonic function',
       regTitle:`${icon('piano')} Register:`,regLow:'Low (C3)',regMid:'Mid (C4)',regHigh:'High (C5)',
@@ -1505,7 +1505,7 @@ const customSettings = {
     funcMode:false, funcSel: [...harmonicFunctions.defaultUnlocked], funcMajor:true, funcMinor:false,
     regLow:false, regMid:true, regHigh:false
   },
-  escalas:     { selected: musicData.escalas.map(x => x.name), tempo:'eighth' }, // 'eighth' (rápido, actual) | 'quarter' (lento, doble duración)
+  escalas:     { selected: musicData.escalas.map(x => x.name), tempo:'fast' }, // 'fast' (actual, sin cambios) | 'slow' (doble duración)
   notas:       {
     selected: musicData.notas.filter(n => [0,2,4,5,7,9,11].includes(n.semitones)).map(n => n.name),
     mode: 'diatonica',
@@ -1801,6 +1801,7 @@ function closeExerciseOverlay() {
 }
 
 function openSheet()  {
+  updateSettingsPanel(); // asegura contenido actualizado también al abrir desde Modo Aprender
   document.getElementById('sheetBackdrop').classList.add('open');
   document.getElementById('bottomSheet').classList.add('open');
 }
@@ -2075,7 +2076,7 @@ function playStudyItem(item) {
     const root = Math.floor(Math.random() * 12);
     const up = item.intervals;
     const down = [...(item.descIntervals || item.intervals)].reverse();
-    const step = customSettings.escalas.tempo === 'quarter' ? 500 : 250; // negras (lento) vs corcheas (rápido, original)
+    const step = customSettings.escalas.tempo === 'slow' ? 500 : 250; // lento vs rápido (original, sin cambios)
     const turn = step + 50; // pausa breve antes de bajar
     const dur = (step * 0.85 / 1000).toFixed(2);
     [...up, ...down].forEach((s, i) => {
@@ -2248,8 +2249,8 @@ function updateSettingsPanel() {
       <div class="settings-section">
         <h4>${sg.tempoTitle}</h4>
         <div class="toggle-group">
-          <button class="toggle-btn ${se2.tempo==='eighth'?'active':''}" onclick="toggleEscalaTempo('eighth')">${sg.tempoFast}</button>
-          <button class="toggle-btn ${se2.tempo==='quarter'?'active':''}" onclick="toggleEscalaTempo('quarter')">${sg.tempoSlow}</button>
+          <button class="toggle-btn ${se2.tempo==='fast'?'active':''}" onclick="toggleEscalaTempo('fast')">${sg.tempoFast}</button>
+          <button class="toggle-btn ${se2.tempo==='slow'?'active':''}" onclick="toggleEscalaTempo('slow')">${sg.tempoSlow}</button>
         </div>
       </div>`;
     }
@@ -2580,7 +2581,7 @@ async function playSound() {
     });
   } else if (currentMode === 'escalas') {
     const ko = currentQuestion.keyOffset || 0;
-    const gap = customSettings.escalas.tempo === 'quarter' ? 760 : 380; // negras (lento) vs corcheas (rápido, igual que antes)
+    const gap = customSettings.escalas.tempo === 'slow' ? 760 : 380; // lento vs rápido (original, sin cambios)
     const ivs = currentQuestion.intervals;
     ivs.forEach((s, i) => {
       const freq = getFreq(s + ko);
