@@ -1047,7 +1047,7 @@ const ui = {
       graduatedBadge:'¡Entrenamiento de las 12 notas completado!',
       replayIntro:'Ver la introducción de nuevo',
       status:(count,next)=>`${icon('ear')} Notas activas: <strong>${count}/12</strong>${next?` · próxima: <strong>${next}</strong>`:''}`,
-      drillStatus:(name)=>`${icon('target')} Refuerzo dirigido — enfocado en <strong>${name}</strong>`,
+      drillStatus:(name)=>`${icon('target')} Práctica extra temporal — ${name} vs. sus vecinas (no son notas activas nuevas)`,
       unlockTitle:'¡Nueva nota desbloqueada!',
       unlockBody:(name,count)=>`Agregaste <strong>${name}</strong>. Ahora entrenas <strong>${count}</strong> nota${count===1?'':'s'} a la vez.`,
       unlockBtn:'¡A entrenar!',
@@ -1055,7 +1055,7 @@ const ui = {
       gradBody:'Completaste el entrenamiento de las 12 notas: superaste el nivel final varias veces, incluso después de descansar — tu reconocimiento es consistente, no solo suerte.',
       gradBtn:'Genial',
       drillTitle:'Refuerzo dirigido',
-      drillBody:(name)=>`<strong>${name}</strong> es la nota donde más te cuesta ahora. Este bloque corto se enfoca solo en ella y sus vecinas — las primeras rondas con retroalimentación, las últimas sin ella.`,
+      drillBody:(name)=>`<strong>${name}</strong> es la nota donde más te cuesta ahora. Viene un bloque corto de práctica EXTRA, usándola junto a sus vecinas cromáticas como opciones — esas vecinas son solo para este ejercicio, no se agregan a tu conjunto activo. Las primeras rondas tienen retroalimentación, las últimas no.`,
       drillBtn:'Empezar',
       introTitle:'Antes de empezar',
       introBody:'Este módulo entrena tu capacidad de reconocer notas sin referencia externa, siguiendo un protocolo de entrenamiento progresivo documentado en investigación reciente (Wong et al., 2025).<br><br>Es importante que sepas: la ciencia sobre si el oído absoluto se puede adquirir en la adultez sigue siendo objeto de debate. El estudio en el que se basa este módulo mostró resultados distintos entre personas — algunas avanzaron mucho, otras menos — y no hay garantía de un resultado específico. Lo que sí está comprobado es que practicar con este método mejora la precisión al identificar notas, incluso si no se llega a una identificación perfecta. Tómalo como una vía más de entrenamiento auditivo, no como una promesa.',
@@ -1210,7 +1210,7 @@ const ui = {
       graduatedBadge:'12-note training completed!',
       replayIntro:'Watch the intro again',
       status:(count,next)=>`${icon('ear')} Active notes: <strong>${count}/12</strong>${next?` · next: <strong>${next}</strong>`:''}`,
-      drillStatus:(name)=>`${icon('target')} Targeted drill — focused on <strong>${name}</strong>`,
+      drillStatus:(name)=>`${icon('target')} Temporary extra practice — ${name} vs. its neighbors (not new active notes)`,
       unlockTitle:'New note unlocked!',
       unlockBody:(name,count)=>`You added <strong>${name}</strong>. You're now training <strong>${count}</strong> note${count===1?'':'s'} at once.`,
       unlockBtn:'Let\'s train!',
@@ -1218,7 +1218,7 @@ const ui = {
       gradBody:'You completed the 12-note training: you passed the final level several times, even after resting — your recognition is consistent, not just luck.',
       gradBtn:'Great',
       drillTitle:'Targeted drill',
-      drillBody:(name)=>`<strong>${name}</strong> is the note you currently struggle with the most. This short block focuses only on it and its neighbors — the first rounds with feedback, the last ones without.`,
+      drillBody:(name)=>`<strong>${name}</strong> is the note you currently struggle with the most. A short EXTRA practice block is coming up, using it alongside its chromatic neighbors as answer options — those neighbors are only for this exercise, they are not added to your active set. The first rounds give feedback, the last ones don't.`,
       drillBtn:'Start',
       introTitle:'Before you start',
       introBody:'This module trains your ability to recognize notes with no external reference, following a progressive training protocol documented in recent research (Wong et al., 2025).<br><br>Important to know: the science on whether absolute pitch can be acquired in adulthood is still debated. The study this module is based on showed very different results between people — some improved a lot, others less — and there\'s no guarantee of a specific outcome. What is established is that practicing with this method improves note-identification accuracy, even without reaching perfect identification. Think of it as one more path of ear training, not a promise.',
@@ -3159,6 +3159,9 @@ function handleOaFinalPass() {
 // Refuerzo dirigido: cada 15 intentos normales, un bloque corto (12 con feedback + 22 sin)
 // enfocado solo en la nota con peor precisión del usuario, frente a sus vecinas cromáticas.
 function startOaWeakNoteDrill() {
+  // Con una sola nota activa no hay "la peor" que comparar — el refuerzo recién tiene sentido
+  // a partir de 2 notas activas (y con suficiente historial real para identificar una más débil)
+  if (oaState.activeNotes.length < 2) return;
   const prog = progress.oidoAbsoluto || {};
   const candidates = oaState.activeNotes.filter(n => prog[n] && prog[n].total >= 5);
   if (!candidates.length) return;
