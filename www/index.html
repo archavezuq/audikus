@@ -1602,6 +1602,7 @@ function changeName() {
 // ==================== INIT ====================
 async function initAudio() {
   await Tone.start();
+  Tone.Transport.start();
   audioReady = true;
   loadProgress();
   loadFuncState();
@@ -1735,10 +1736,16 @@ function openExerciseOverlay() {
   scrollToExerciseArea();
 }
 
+// Programa una nota en el reloj de audio de Tone (no en el hilo JS) para que no se
+// retrase ni se amontone con otras si el hilo principal está ocupado un momento.
+function scheduleAudio(delayMs, fn) {
+  return Tone.Transport.scheduleOnce(() => { if (audioReady) fn(); }, '+' + (delayMs / 1000));
+}
+
 // Silencia todo: temporizadores de reproducción, avance automático a la siguiente pregunta y notas sonando
 let nextQTimer = null;
 function stopAllSound() {
-  studyTimers.forEach(t => clearTimeout(t));
+  studyTimers.forEach(t => Tone.Transport.clear(t));
   studyTimers = [];
   if (nextQTimer) { clearTimeout(nextQTimer); nextQTimer = null; }
   try { synth.releaseAll(); } catch(e) {}
@@ -1975,10 +1982,10 @@ function renderStudyMode() {
 
 function playStudyItem(item) {
   if (!audioReady) return;
-  studyTimers.forEach(t => clearTimeout(t));
+  studyTimers.forEach(t => Tone.Transport.clear(t));
   studyTimers = [];
   synth.releaseAll();
-  const t = (ms, f, dur) => studyTimers.push(setTimeout(() => { if (audioReady) synth.triggerAttackRelease(f, dur); }, ms));
+  const t = (ms, f, dur) => studyTimers.push(scheduleAudio(ms, () => synth.triggerAttackRelease(f, dur)));
   if (currentMode === 'intervalos') {
     const ro = Math.floor(Math.random() * 12);
     t(0,    getFreq(ro), '0.5');
@@ -2007,8 +2014,8 @@ function playStudyItem(item) {
       const delay = i < up.length ? i * step : (up.length * step + turn + (i - up.length) * step);
       const freq = getFreq(s + root);
       const isLast = i === seq.length - 1;
-      studyTimers.push(setTimeout(() => { if (audioReady) synth.triggerAttack(freq); }, delay));
-      studyTimers.push(setTimeout(() => { if (audioReady) synth.triggerRelease(freq); }, delay + (isLast ? 550 : step - 12)));
+      studyTimers.push(scheduleAudio(delay, () => synth.triggerAttack(freq)));
+      studyTimers.push(scheduleAudio(delay + (isLast ? 550 : step - 12), () => synth.triggerRelease(freq)));
     });
   } else if (currentMode === 'notas') {
     const ro = 0; // referencia siempre en Do (C4) en modo estudio
@@ -2460,10 +2467,10 @@ function getRandomRegister() {
 
 async function playSound() {
   if (!audioReady || !currentQuestion) return;
-  studyTimers.forEach(t => clearTimeout(t));
+  studyTimers.forEach(t => Tone.Transport.clear(t));
   studyTimers = [];
   synth.releaseAll();
-  const t = (ms, f, dur) => studyTimers.push(setTimeout(() => { if (audioReady) synth.triggerAttackRelease(f, dur); }, ms));
+  const t = (ms, f, dur) => studyTimers.push(scheduleAudio(ms, () => synth.triggerAttackRelease(f, dur)));
   if (currentMode === 'intervalos') {
     const oct = currentQuestion.register || 4;
     const ro = currentQuestion.rootOffset || 0;
@@ -2505,8 +2512,8 @@ async function playSound() {
     ivs.forEach((s, i) => {
       const freq = getFreq(s + ko);
       const isLast = i === ivs.length - 1;
-      studyTimers.push(setTimeout(() => { if (audioReady) synth.triggerAttack(freq); }, i * gap));
-      studyTimers.push(setTimeout(() => { if (audioReady) synth.triggerRelease(freq); }, i * gap + (isLast ? 550 : gap - 12)));
+      studyTimers.push(scheduleAudio(i * gap, () => synth.triggerAttack(freq)));
+      studyTimers.push(scheduleAudio(i * gap + (isLast ? 550 : gap - 12), () => synth.triggerRelease(freq)));
     });
   } else if (currentMode === 'notas') {
     const oct = currentQuestion.register || 4;
@@ -2900,10 +2907,10 @@ function renderEntonacionUI() {
 
 function playEntonacionStudy(semitones, refMidi) {
   if (!audioReady) return;
-  studyTimers.forEach(function(t){clearTimeout(t);}); studyTimers = [];
+  studyTimers.forEach(function(t){Tone.Transport.clear(t);}); studyTimers = [];
   synth.releaseAll();
-  studyTimers.push(setTimeout(function(){ if(audioReady) synth.triggerAttackRelease(midiFreq(refMidi), "0.6"); }, 0));
-  studyTimers.push(setTimeout(function(){ if(audioReady) synth.triggerAttackRelease(midiFreq(refMidi + semitones), "0.7"); }, 900));
+  studyTimers.push(scheduleAudio(0, () => synth.triggerAttackRelease(midiFreq(refMidi), "0.6")));
+  studyTimers.push(scheduleAudio(900, () => synth.triggerAttackRelease(midiFreq(refMidi + semitones), "0.7")));
 }
 
 function playEntonacionRef() {
@@ -3063,12 +3070,10 @@ function playEntonSeqRef() {
 function playEntonSeqFull() {
   if (!audioReady || !currentQuestion) return;
   synth.releaseAll();
-  studyTimers.forEach(t => clearTimeout(t)); studyTimers = [];
+  studyTimers.forEach(t => Tone.Transport.clear(t)); studyTimers = [];
   const sq = currentQuestion.midiSequence;
   sq.forEach((midi, i) => {
-    studyTimers.push(setTimeout(() => {
-      if (audioReady) synth.triggerAttackRelease(midiFreq(midi), i < sq.length - 1 ? '0.40' : '0.7');
-    }, i * 420));
+    studyTimers.push(scheduleAudio(i * 420, () => synth.triggerAttackRelease(midiFreq(midi), i < sq.length - 1 ? '0.40' : '0.7')));
   });
 }
 
