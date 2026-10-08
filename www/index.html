@@ -2002,10 +2002,13 @@ function playStudyItem(item) {
     const down = [...(item.descIntervals || item.intervals)].reverse();
     const step = customSettings.escalas.tempo === 'slow' ? 500 : 250; // lento vs rápido (original, sin cambios)
     const turn = step + 50; // pausa breve antes de bajar
-    const dur = (step * 0.85 / 1000).toFixed(2);
-    [...up, ...down].forEach((s, i) => {
+    const seq = [...up, ...down];
+    seq.forEach((s, i) => {
       const delay = i < up.length ? i * step : (up.length * step + turn + (i - up.length) * step);
-      t(delay, getFreq(s + root), dur);
+      const freq = getFreq(s + root);
+      const isLast = i === seq.length - 1;
+      studyTimers.push(setTimeout(() => { if (audioReady) synth.triggerAttack(freq); }, delay));
+      studyTimers.push(setTimeout(() => { if (audioReady) synth.triggerRelease(freq); }, delay + (isLast ? 550 : step - 12)));
     });
   } else if (currentMode === 'notas') {
     const ro = 0; // referencia siempre en Do (C4) en modo estudio
