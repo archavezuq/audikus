@@ -962,7 +962,7 @@ const ui = {
       septimas:{title:'Acordes con Séptima',sub:'Acordes de 4 Notas'},
       progresiones:{title:'Progresiones',sub:'Secuencias Armónicas'},
       escalas:{title:'Escalas',sub:'Mayor, Menor y Modos'},
-      notas:{title:'Nota Absoluta',sub:'Diatónico y Cromático'},
+      notas:{title:'Notas Relativas',sub:'Diatónico y Cromático'},
       alturas:{title:'Contorno Melódico',sub:'Dirección e intervalos de una secuencia'},
       oidoAbsoluto:{title:'Oído Absoluto',sub:'Identifica la nota sin referencia'},
       entonacion:{title:'Entonación',sub:'Canta el intervalo'},
@@ -988,7 +988,7 @@ const ui = {
       regTitle:`${icon('piano')} Registro:`,low:'Grave (C3)',mid:'Medio (C4)',high:'Agudo (C5)',
       refTitle:`${icon('bell')} Nota de referencia (Do):`,refOn:'Activada',refOff:'Desactivada',
       refOnText:`${icon('bell')} Se reproducirá <strong>Do</strong> antes de cada nota para orientarte.`,
-      refOffText:`${icon('bellOff')} Sin referencia — modo avanzado para oído absoluto real.`
+      refOffText:`${icon('bellOff')} Sin referencia — modo avanzado, deduce la nota entre las opciones.`
     },
     sGen:{
       selInfo:(n,t)=>`✓ ${n} / ${t} seleccionados`,playTitle:`${icon('note')} Modo de reproducción:`,
@@ -1018,7 +1018,7 @@ const ui = {
     analysisRec:(cat)=>`${icon('target')} <strong>Recomendación:</strong> Dedica tu próxima sesión a <strong>${cat}</strong> — es el área con mayor margen de mejora.`,
     analysisConf:(cat,a,b,n)=>`${icon('next')} <strong>Confusión frecuente:</strong> En ${cat} confundes <strong>${a}</strong> con <strong>${b}</strong> (${n} veces).`,
     analysisBased:(n)=>`Basado en ${n} respuestas registradas.`,
-    cats:{intervalos:'Intervalos',triadas:'Tríadas',inversiones:'Inversiones',septimas:'Acordes con Séptima',progresiones:'Progresiones',escalas:'Escalas',notas:'Nota Absoluta',alturas:'Contorno Melódico',oidoAbsoluto:'Oído Absoluto',entonacion:'Entonación',entonAcordes:'Entonación Acordes',entonEscalas:'Entonación Escalas'},
+    cats:{intervalos:'Intervalos',triadas:'Tríadas',inversiones:'Inversiones',septimas:'Acordes con Séptima',progresiones:'Progresiones',escalas:'Escalas',notas:'Notas Relativas',alturas:'Contorno Melódico',oidoAbsoluto:'Oído Absoluto',entonacion:'Entonación',entonAcordes:'Entonación Acordes',entonEscalas:'Entonación Escalas'},
     sAlturas:{
       octTitle:`${icon('piano')} Registro de referencia:`,
       ansHigh:'Agudo ↑', ansLow:'Grave ↓',
@@ -1120,7 +1120,7 @@ const ui = {
       septimas:{title:'Seventh Chords',sub:'4-Note Chords'},
       progresiones:{title:'Progressions',sub:'Harmonic Sequences'},
       escalas:{title:'Scales',sub:'Major, Minor and Modes'},
-      notas:{title:'Absolute Pitch',sub:'Diatonic and Chromatic'},
+      notas:{title:'Relative Notes',sub:'Diatonic and Chromatic'},
       alturas:{title:'Melodic Contour',sub:'Direction and intervals of a sequence'},
       oidoAbsoluto:{title:'Perfect Pitch',sub:'Identify the note with no reference'},
       entonacion:{title:'Intonation',sub:'Sing the interval'},
@@ -1176,7 +1176,7 @@ const ui = {
     analysisRec:(cat)=>`${icon('target')} <strong>Recommendation:</strong> Dedicate your next session to <strong>${cat}</strong> — it's the area with the most room for improvement.`,
     analysisConf:(cat,a,b,n)=>`${icon('next')} <strong>Frequent confusion:</strong> In ${cat} you confuse <strong>${a}</strong> with <strong>${b}</strong> (${n} times).`,
     analysisBased:(n)=>`Based on ${n} recorded answers.`,
-    cats:{intervalos:'Intervals',triadas:'Triads',inversiones:'Inversions',septimas:'Seventh Chords',progresiones:'Progressions',escalas:'Scales',notas:'Absolute Pitch',alturas:'Melodic Contour',oidoAbsoluto:'Perfect Pitch',entonacion:'Intonation',entonAcordes:'Chord Intonation',entonEscalas:'Scale Intonation'},
+    cats:{intervalos:'Intervals',triadas:'Triads',inversiones:'Inversions',septimas:'Seventh Chords',progresiones:'Progressions',escalas:'Scales',notas:'Relative Notes',alturas:'Melodic Contour',oidoAbsoluto:'Perfect Pitch',entonacion:'Intonation',entonAcordes:'Chord Intonation',entonEscalas:'Scale Intonation'},
     sAlturas:{
       octTitle:`${icon('piano')} Reference register:`,
       ansHigh:'High ↑', ansLow:'Low ↓',
@@ -4536,7 +4536,7 @@ function getResponse(question) {
     return `${icon('dot',16,'var(--primary)')} <strong>Círculo de Quintas</strong><br><br>Un mapa de las 12 tonalidades ordenadas por quintas justas.<br><br>• Sentido horario: subiendo una quinta (Do→Sol→Re→La...)<br>• Sentido antihorario: subiendo una cuarta (Do→Fa→Si♭...)<br>• Tonalidades cercanas = más notas en común → transiciones suaves<br>• Tonalidades opuestas = máximo contraste<br><br>Usos: elegir la tonalidad relativa, entender modulaciones, preparar el ii-V-I. Es la brújula de la armonía tonal. ${icon('compass')}`;
 
   if (has('oido absoluto','oído absoluto','oido relativo','oído relativo','perfect pitch','relative pitch'))
-    return '👂 <strong>Oído Absoluto vs. Oído Relativo</strong><br><br><strong>Oído Absoluto:</strong> reconocer cualquier nota sin referencia externa. Muy raro, en parte genético y se desarrolla en la infancia.<br><br><strong>Oído Relativo:</strong> reconocer la relación entre notas — intervalos, acordes, escalas. <em>Se puede entrenar a cualquier edad.</em><br><br>✅ El oído relativo es lo que necesitas como músico profesional y lo que entrena Audikus.<br><br>La gran mayoría de músicos profesionales trabajan con oído relativo. No necesitas el absoluto para ser excelente. 🎯';
+    return `${icon('ear')} <strong>Oído Absoluto vs. Oído Relativo</strong><br><br><strong>Oído Absoluto:</strong> reconocer cualquier nota sin referencia externa. Es poco común — tradicionalmente se asoció a un componente genético y a desarrollarse en la infancia, pero investigación reciente sugiere que también se puede entrenar en la adultez, aunque los resultados varían mucho entre personas.<br><br><strong>Oído Relativo:</strong> reconocer la relación entre notas — intervalos, acordes, escalas. <em>Se puede entrenar a cualquier edad</em>, con resultados mucho más consistentes.<br><br>${icon('check')} El oído relativo es lo que necesitas como músico profesional, y es el corazón de Audikus.<br><br>Si quieres explorar el oído absoluto de todas formas, Audikus también tiene un módulo experimental para eso (<strong>Oído Absoluto</strong>), basado en un protocolo de investigación reciente — pero no es necesario para tocar ni estudiar música a nivel profesional.`;
 
   if (has('arpegio','arpeggio','arpeggios','arpegios'))
     return '🎹 <strong>Arpegio</strong><br><br>Tocar las notas de un acorde <strong>una por una</strong> en lugar de simultáneamente.<br><br>• Do mayor armónico: Do-Mi-Sol (juntas)<br>• Do mayor en arpegio: Do… Mi… Sol… (sucesivas)<br><br>El arpegio revela la estructura del acorde y es fundamental para:<br>• Guitarra clásica y flamenco<br>• Piano (mano izquierda)<br>• Reconocimiento de acordes de oído — escuchas el color del acorde nota por nota 🎶';
@@ -4729,7 +4729,7 @@ function getResponseEN(question) {
     return `${icon('dot',16,'var(--primary)')} <strong>Circle of Fifths</strong><br><br>A map of all 12 keys arranged by perfect fifths.<br><br>• Clockwise: ascending a fifth (C→G→D→A...)<br>• Counter-clockwise: ascending a fourth (C→F→B♭...)<br>• Nearby keys = more notes in common → smoother transitions<br>• Opposite keys = maximum contrast<br><br>Uses: finding relative keys, understanding modulations, navigating ii-V-I. The compass of tonal harmony. ${icon('compass')}`;
 
   if (has('perfect pitch','absolute pitch','relative pitch','perfect ear'))
-    return '👂 <strong>Absolute Pitch vs. Relative Pitch</strong><br><br><strong>Absolute Pitch:</strong> identifying any note without an external reference. Very rare, partly genetic, develops in early childhood.<br><br><strong>Relative Pitch:</strong> recognizing the relationship between notes — intervals, chords, scales. <em>Can be trained at any age.</em><br><br>✅ Relative pitch is what professional musicians need and what Audikus trains.<br><br>The vast majority of professional musicians work with relative pitch. You don\'t need absolute pitch to be excellent. 🎯';
+    return `${icon('ear')} <strong>Absolute Pitch vs. Relative Pitch</strong><br><br><strong>Absolute Pitch:</strong> identifying any note without an external reference. It's uncommon — traditionally linked to genetics and early childhood development, but recent research suggests it can also be trained in adulthood, though results vary a lot between people.<br><br><strong>Relative Pitch:</strong> recognizing the relationship between notes — intervals, chords, scales. <em>Can be trained at any age</em>, with far more consistent results.<br><br>${icon('check')} Relative pitch is what professional musicians need, and it's the heart of Audikus.<br><br>If you still want to explore absolute pitch, Audikus also has an experimental module for that (<strong>Perfect Pitch</strong>), based on a recent research protocol — but it isn't necessary to play or study music at a professional level.`;
 
   if (has('arpeggio','arpeggios'))
     return '🎹 <strong>Arpeggio</strong><br><br>Playing the notes of a chord <strong>one at a time</strong> rather than simultaneously.<br><br>• C major harmonic: C-E-G (together)<br>• C major arpeggio: C… E… G… (successive)<br><br>Arpeggios reveal chord structure and are fundamental for:<br>• Classical and flamenco guitar<br>• Piano (left hand)<br>• Ear training — you hear the chord\'s color note by note 🎶';
