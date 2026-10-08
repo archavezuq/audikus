@@ -1059,7 +1059,10 @@ const ui = {
       drillBtn:'Empezar',
       introTitle:'Antes de empezar',
       introBody:'Este módulo entrena tu capacidad de reconocer notas sin referencia externa, siguiendo un protocolo de entrenamiento progresivo documentado en investigación reciente (Wong et al., 2025).<br><br>Es importante que sepas: la ciencia sobre si el oído absoluto se puede adquirir en la adultez sigue siendo objeto de debate. El estudio en el que se basa este módulo mostró resultados distintos entre personas — algunas avanzaron mucho, otras menos — y no hay garantía de un resultado específico. Lo que sí está comprobado es que practicar con este método mejora la precisión al identificar notas, incluso si no se llega a una identificación perfecta. Tómalo como una vía más de entrenamiento auditivo, no como una promesa.',
-      introBtn:'Entendido, empezar'
+      introBtn:'Entendido, empezar',
+      familiarizeBody:(name)=>`Antes de empezar el examen, escucha <strong>${name}</strong> en sus distintos registros, las veces que quieras. Cuando ya la tengas en el oído, presiona Comenzar — ahí sí entra el cronómetro.`,
+      familiarizeListenBtn:'Escuchar',
+      familiarizeStartBtn:'Comenzar'
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Tu rango vocal:`,
@@ -1217,7 +1220,10 @@ const ui = {
       drillBtn:'Start',
       introTitle:'Before you start',
       introBody:'This module trains your ability to recognize notes with no external reference, following a progressive training protocol documented in recent research (Wong et al., 2025).<br><br>Important to know: the science on whether absolute pitch can be acquired in adulthood is still debated. The study this module is based on showed very different results between people — some improved a lot, others less — and there\'s no guarantee of a specific outcome. What is established is that practicing with this method improves note-identification accuracy, even without reaching perfect identification. Think of it as one more path of ear training, not a promise.',
-      introBtn:'Got it, start'
+      introBtn:'Got it, start',
+      familiarizeBody:(name)=>`Before the quiz starts, listen to <strong>${name}</strong> across its registers, as many times as you like. Once it's in your ear, press Start — that's when the timer kicks in.`,
+      familiarizeListenBtn:'Listen',
+      familiarizeStartBtn:'Start'
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Your vocal range:`,
@@ -2883,7 +2889,8 @@ async function playSound() {
     freqs.forEach((f, i) => t(i * gap, f, i === freqs.length - 1 ? '0.7' : '0.5'));
   } else if (currentMode === 'oidoAbsoluto') {
     t(0, getFreq(currentQuestion.semitones, currentQuestion.register), '0.8');
-    if (customSettings.oidoAbsoluto.timeoutEnabled && !oaState.drill) startOaTimeout();
+    // El tiempo para responder cuenta desde que la nota TERMINA de sonar (800ms), no desde que empieza
+    if (customSettings.oidoAbsoluto.timeoutEnabled && !oaState.drill) setTimeout(() => { if (!answered) startOaTimeout(); }, 800);
   } else if (currentMode === 'entonacion') {
     t(0, midiFreq(currentQuestion.refMidi), '0.8');
   } else if (currentMode === 'entonAcordes' || currentMode === 'entonEscalas') {
@@ -3029,7 +3036,9 @@ let oaState = {
   graduated: false,
   graduatedAt: null,
   weakDrillCounter: 0, // cuenta hasta 15 intentos para disparar el refuerzo dirigido
-  drill: null          // { target, trialIndex, feedbackTrials, totalTrials } mientras hay un refuerzo activo
+  drill: null,         // { target, trialIndex, feedbackTrials, totalTrials } mientras hay un refuerzo activo
+  needsFamiliarization: true,         // true = mostrar la pantalla de "escucha libre" antes del examen
+  lastAddedNote: customSettings.oidoAbsoluto.startNote // nota a familiarizar (la última agregada al conjunto)
 };
 function loadOaState() {
   try {
@@ -3044,7 +3053,9 @@ function loadOaState() {
         graduated: !!saved.graduated,
         graduatedAt: saved.graduatedAt || null,
         weakDrillCounter: saved.weakDrillCounter || 0,
-        drill: saved.drill || null
+        drill: saved.drill || null,
+        needsFamiliarization: saved.needsFamiliarization !== undefined ? saved.needsFamiliarization : true,
+        lastAddedNote: saved.lastAddedNote || saved.activeNotes[saved.activeNotes.length - 1]
       };
     }
   } catch(e) {}
@@ -3115,7 +3126,13 @@ function checkOaLevelAdvance() {
     oaState.subLevel++;
   } else {
     const next = oaNextToUnlock();
-    if (next) { oaState.activeNotes.push(next); oaState.subLevel = 1; showOaUnlockModal(next); }
+    if (next) {
+      oaState.activeNotes.push(next);
+      oaState.subLevel = 1;
+      oaState.needsFamiliarization = true;
+      oaState.lastAddedNote = next;
+      showOaUnlockModal(next);
+    }
   }
 }
 function handleOaFinalPass() {
@@ -3160,6 +3177,30 @@ function oaDrillNeighborPool() {
   const pool = new Set([oaState.drill.target]);
   [idx - 2, idx - 1, idx + 1, idx + 2].forEach(i => { if (i >= 0 && i <= 11) pool.add(names[i]); });
   return Array.from(pool);
+}
+
+// Familiarización: antes de examinar una nota nueva (incluida la primera), se deja escuchar
+// libremente en sus 3 registros, sin cronómetro — recién al presionar "Comenzar" entra el examen.
+function playOaFamiliarization() {
+  stopAllSound();
+  const semis = musicData.notas.find(n => n.name === oaState.lastAddedNote).semitones;
+  [4, 5, 6].forEach((reg, i) => studyTimers.push(scheduleAudio(i * 900, () => synth.triggerAttackRelease(getFreq(semis, reg), '0.8'))));
+}
+function startOaQuiz() {
+  oaState.needsFamiliarization = false;
+  saveOaState();
+  nextQuestion();
+}
+function renderOaFamiliarization() {
+  const c = document.getElementById('optionsContainer');
+  if (!c) return;
+  const L = ui[currentLang].sOidoAbsoluto;
+  c.innerHTML = `
+    <div style="text-align:center;padding:10px 6px;">
+      <p style="font-size:0.95em;color:var(--text-muted);margin-bottom:18px;line-height:1.6;">${L.familiarizeBody(dn(oaState.lastAddedNote))}</p>
+      <button class="btn" style="width:100%;margin-bottom:12px;background:var(--card-hover);border:1px solid var(--border);" onclick="playOaFamiliarization()">${icon('play')} ${L.familiarizeListenBtn}</button>
+      <button class="btn btn-success" style="width:100%;" onclick="startOaQuiz()">${L.familiarizeStartBtn}</button>
+    </div>`;
 }
 
 // Ventana de tiempo visible (barra) — temporizador de UI, no de audio; se cancela al responder.
@@ -3265,6 +3306,8 @@ function toggleOaManualNote(name) {
   oaState.activeNotes.push(name);
   oaState.subLevel = 1; // el conjunto cambió: empieza el nivel 1 con las notas nuevas, igual que un desbloqueo automático
   oaState.attempts = [];
+  oaState.needsFamiliarization = true;
+  oaState.lastAddedNote = name;
   if (!customSettings.oidoAbsoluto.manualNotes.includes(name)) customSettings.oidoAbsoluto.manualNotes.push(name);
   saveOaState();
   updateSettingsPanel();
@@ -3381,6 +3424,18 @@ function nextQuestion(autoPlay = true) {
     correctIndex = shuffled.indexOf(correctLabel);
     currentQuestion = { steps, octave: as.octave, noteCount };
   } else if (currentMode === 'oidoAbsoluto') {
+    if (oaState.needsFamiliarization) {
+      const fbEl = document.getElementById('feedback');
+      if (fbEl) { fbEl.textContent = ''; fbEl.className = 'feedback'; }
+      // Oculta los controles genéricos de reproducción — mientras se familiariza no hay
+      // "pregunta actual" real, y el botón Reproducir de siempre tocaría la anterior.
+      const pcHide = document.querySelector('.play-controls');
+      if (pcHide) pcHide.style.display = 'none';
+      renderOaFamiliarization();
+      return;
+    }
+    const pcShow = document.querySelector('.play-controls');
+    if (pcShow) pcShow.style.display = '';
     const register = [4, 5, 6][Math.floor(Math.random() * 3)];
     if (oaState.drill) {
       const pool = oaDrillNeighborPool();
