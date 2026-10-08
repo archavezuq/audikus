@@ -1001,6 +1001,7 @@ const ui = {
       funcUnlockBtn:'¡A practicar!'
     },
     notasNoRef:`${icon('bellOff')} Sin referencia — identifica la nota directamente`,
+    funcIdentifyHint:`${icon('compass')} Identifica la función armónica del acorde`,
     noData:`${icon('note')} Aún no hay datos. Practica en <strong>Modo Prueba</strong> para ver tu progreso aquí.`,
     suggestions:`${icon('bulb')} Sugerencias`,
     suggInverse:(cat,a,b,n)=>`En <strong>${cat}</strong> confundes <strong>${a}</strong> con su inverso <strong>${b}</strong> (${n} veces). Son complementarios — practica en modo armónico para diferenciarlos.`,
@@ -1130,6 +1131,7 @@ const ui = {
       funcUnlockBtn:'Keep practicing!'
     },
     notasNoRef:`${icon('bellOff')} No reference — identify the note directly`,
+    funcIdentifyHint:`${icon('compass')} Identify the chord's harmonic function`,
     noData:`${icon('note')} No data yet. Practice in <strong>Practice Mode</strong> to see your progress here.`,
     suggestions:`${icon('bulb')} Suggestions`,
     suggInverse:(cat,a,b,n)=>`In <strong>${cat}</strong> you confuse <strong>${a}</strong> with its inverse <strong>${b}</strong> (${n} times). They are complementary — practice in harmonic mode to distinguish them.`,
@@ -3117,6 +3119,11 @@ function renderOptions(options, correctIndex) {
     const refEl = document.createElement('p');
     refEl.style.cssText = 'text-align:center;margin:0 0 16px;font-size:0.92em;color:var(--text-muted);';
     refEl.innerHTML = sa.hint(n, customSettings.alturas.subMode);
+    c.appendChild(refEl);
+  } else if (currentMode === 'progresiones' && customSettings.progresiones.funcMode) {
+    const refEl = document.createElement('p');
+    refEl.style.cssText = 'text-align:center;margin:0 0 16px;font-size:0.92em;color:var(--text-muted);';
+    refEl.innerHTML = tx('funcIdentifyHint');
     c.appendChild(refEl);
   }
   options.forEach((opt, i) => {
