@@ -868,6 +868,7 @@ const ICON_PATHS = {
   play:"<path d=\"M8 5.5v13l10-6.5z\"></path>",
   rainbow:"<path d=\"M3 18a9 9 0 0 1 18 0\"></path><path d=\"M6.5 18a5.5 5.5 0 0 1 11 0\"></path><path d=\"M10 18a2 2 0 0 1 4 0\"></path>",
   restart:"<path d=\"M4 12a8 8 0 1 0 2.5-5.8L4 8.5\"></path><path d=\"M4 4v4.5h4.5\"></path>",
+  right:"<path d=\"M4 12h16M14 6l6 6-6 6\"></path>",
   rings:"<circle cx=\"9\" cy=\"14.5\" r=\"5\"></circle><circle cx=\"15\" cy=\"14.5\" r=\"5\"></circle><path d=\"M15 9.5l-1.5-2 1.5-2 1.5 2z\"></path>",
   sax:"<path d=\"M9.5 3h4\"></path><path d=\"M11.5 3v10.5a3.5 3.5 0 0 0 7 0V11\"></path><path d=\"M16.5 11h4\"></path><circle cx=\"11.5\" cy=\"7\" r=\"1\" fill=\"currentColor\" stroke=\"none\"></circle><circle cx=\"11.5\" cy=\"10.5\" r=\"1\" fill=\"currentColor\" stroke=\"none\"></circle>",
   score:"<path d=\"M3 7h18M3 12h18M3 17h18\"></path><circle cx=\"13.5\" cy=\"14.5\" r=\"2.6\" fill=\"currentColor\" stroke=\"none\"></circle><path d=\"M16 14.5V3.5\"></path>",
@@ -927,7 +928,7 @@ const ui = {
     tipText:'Aprende a <strong>cantar el fragmento inicial</strong> de cada canción de referencia, especialmente el motivo donde aparece el intervalo. Practícalo en <strong>distintas tonalidades</strong> y juega con él: cámbialo de ritmo, cántalo al tempo habitual y también más rápido y más lento. Al interiorizar ese motivo así, construyes una <strong>caja de herramientas auditivas</strong> que reconoce el intervalo automáticamente en cualquier contexto musical.',
     tipTextChords:'<strong>Canta cada acorde</strong> antes de entrenar. Entonar sus notas en voz alta te ayuda a interiorizar su color sonoro. En el modo prueba puedes identificarlo de dos formas: <strong>(1)</strong> ubica la nota más grave y analiza los intervalos hacia arriba; <strong>(2)</strong> desde la nota más aguda, construye hacia abajo. Practica los dos métodos.',
     tipTextInv:'Canta cada acorde primero en <strong>posición fundamental</strong>, luego en <strong>1ª inversión</strong> y finalmente en <strong>2ª inversión</strong>. Mientras cantas, piensa en las distancias entre las notas. En el modo prueba: <strong>(1)</strong> ubica la nota más grave e identifica los intervalos superiores; <strong>(2)</strong> desde la nota más aguda, construye hacia abajo. <strong>Cantar es clave.</strong>',
-    refLabel:'♩ Referencia melódica', semitones:'semitonos',
+    refLabel:'♩ Referencia melódica', semitones:'semitonos', exampleLabel:'Ejemplo:',
     feedbackCorrect:'¡Correcto! ✓', feedbackIncorrect:'Incorrecto. Era:',
     feedbackApprox:`${icon('warn',16,'var(--warning)')} Aproximación`, feedbackApproxIs:'es el inverso de',
     sInt:{
@@ -975,7 +976,17 @@ const ui = {
       ansHigh:'Agudo ↑', ansLow:'Grave ↓',
       descGrave:'Sonidos graves, como el contrabajo o la tuba. Frecuencias bajas.',
       descAgudo:'Sonidos agudos, como la flauta o el violín. Frecuencias altas.',
-      tipAlt:`${icon('bulb')} Escucha primero la <strong>nota de referencia</strong>, luego el sonido de comparación. ¿Subió o bajó la altura?`
+      tipAlt:`${icon('bulb')} Escucha primero la <strong>nota de referencia</strong>, luego el sonido de comparación. ¿Subió o bajó la altura?`,
+      subModeTitle:`${icon('list')} Tipo de pregunta:`,
+      subModeMovement:'Movimiento melódico', subModeIntervals:'Intervalos específicos',
+      countTitle:`${icon('note')} Cantidad de notas:`, notesWord:'notas',
+      intervalsTitle:`${icon('list')} Intervalos a incluir:`,
+      hint:(n, sub) => {
+        const legend = `${icon('up')} sube, ${icon('down')} baja, ${icon('right')} misma nota`;
+        return sub === 'intervals'
+          ? `${icon('bell')} Escucharás una secuencia de ${n} notas. Identifica el intervalo y la dirección de cada salto: ${legend}.`
+          : `${icon('bell')} Escucharás una secuencia de ${n} notas. Identifica la dirección de cada salto: ${legend}.`;
+      }
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Tu rango vocal:`,
@@ -1033,7 +1044,7 @@ const ui = {
     tipText:'Learn to <strong>sing the opening motif</strong> of each reference song, especially the motif where the interval appears. Practice it in <strong>different keys</strong> and play with it: change its rhythm, sing it at the usual tempo and also faster and slower. By internalizing that motif this way, you build an <strong>auditory toolbox</strong> that recognizes the interval automatically in any musical context.',
     tipTextChords:'<strong>Sing each chord</strong> before practicing. Singing its notes out loud helps you internalize its tonal color. In practice mode you can identify it two ways: <strong>(1)</strong> locate the lowest note and analyze the intervals upward; <strong>(2)</strong> from the highest note, build downward. Practice both methods.',
     tipTextInv:'Sing each chord first in <strong>root position</strong>, then in <strong>1st inversion</strong>, then in <strong>2nd inversion</strong>. While singing, think about the distances between the notes. In practice mode: <strong>(1)</strong> locate the lowest note and identify the upper intervals; <strong>(2)</strong> from the highest note, build downward. <strong>Singing is key.</strong>',
-    refLabel:'♩ Melodic Reference', semitones:'semitones',
+    refLabel:'♩ Melodic Reference', semitones:'semitones', exampleLabel:'Example:',
     feedbackCorrect:'Correct! ✓', feedbackIncorrect:'Incorrect. It was:',
     feedbackApprox:`${icon('warn',16,'var(--warning)')} Close`, feedbackApproxIs:'is the inverse of',
     sInt:{
@@ -1081,7 +1092,17 @@ const ui = {
       ansHigh:'High ↑', ansLow:'Low ↓',
       descGrave:'Low sounds, like a bass guitar or tuba. Low frequencies.',
       descAgudo:'High sounds, like a flute or violin. High frequencies.',
-      tipAlt:`${icon('bulb')} Listen to the <strong>reference note</strong> first, then the comparison sound. Did the pitch go up or down?`
+      tipAlt:`${icon('bulb')} Listen to the <strong>reference note</strong> first, then the comparison sound. Did the pitch go up or down?`,
+      subModeTitle:`${icon('list')} Question type:`,
+      subModeMovement:'Melodic movement', subModeIntervals:'Specific intervals',
+      countTitle:`${icon('note')} Number of notes:`, notesWord:'notes',
+      intervalsTitle:`${icon('list')} Intervals to include:`,
+      hint:(n, sub) => {
+        const legend = `${icon('up')} up, ${icon('down')} down, ${icon('right')} same note`;
+        return sub === 'intervals'
+          ? `${icon('bell')} You will hear a sequence of ${n} notes. Identify the interval and direction of each leap: ${legend}.`
+          : `${icon('bell')} You will hear a sequence of ${n} notes. Identify the direction of each leap: ${legend}.`;
+      }
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Your vocal range:`,
@@ -1114,6 +1135,7 @@ const ui = {
 function tx(key) { return (ui[currentLang]||ui.es)[key] || ui.es[key] || key; }
 
 const termEN = {
+  'Unísono (P1)':'Unison (P1)',
   'Segunda menor (m2)':'Minor Second (m2)','Segunda mayor (M2)':'Major Second (M2)',
   'Tercera menor (m3)':'Minor Third (m3)','Tercera mayor (M3)':'Major Third (M3)',
   'Cuarta justa (P4)':'Perfect Fourth (P4)','Tritono (TT)':'Tritone (TT)',
@@ -1156,6 +1178,8 @@ const termEN = {
   'i - iv - Ger+6 - I6/4 - V - i (Menor)':'i - iv - Ger+6 - I6/4 - V - i (Minor)'
 };
 function dn(name) { return currentLang==='es' ? name : (termEN[name]||name); }
+// Extrae la abreviatura entre paréntesis de un nombre de intervalo, p.ej. "Tercera mayor (M3)" → "M3"
+function intervalAbbr(name) { const m = /\(([^)]+)\)/.exec(name || ''); return m ? m[1] : (name || ''); }
 
 // ==================== DATOS ====================
 const scaleDetails = {
@@ -1449,6 +1473,25 @@ const harmonicFunctions = {
   }
 };
 
+// Lista propia de Alturas: igual a musicData.intervalos pero con el Unísono (0 semitonos),
+// que representa "misma nota" en el sub-modo Intervalos específicos. No se mezcla con el
+// módulo Intervalos para no alterar su propia selección.
+const ALTURAS_INTERVALS = [{ name:'Unísono (P1)', semitones:0 }, ...musicData.intervalos];
+// Reutilizada también para mostrar ejemplos de notas en tarjetas de acordes (Tríadas/Inversiones/Séptimas)
+function semitonesToAbbr(semi) {
+  const item = ALTURAS_INTERVALS.find(x => x.semitones === semi);
+  return item ? intervalAbbr(item.name) : '';
+}
+function chordExampleHTML(intervals) {
+  const noteNames = currentLang === 'es'
+    ? ['Do','Do♯','Re','Re♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si']
+    : ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+  return intervals.map((semi, i) => {
+    const name = noteNames[((semi % 12) + 12) % 12];
+    return i === 0 ? name : `${name} (${semitonesToAbbr(semi)})`;
+  }).join(' – ');
+}
+
 const customSettings = {
   intervalos: {
     selectedIntervals: musicData.intervalos.map(i => i.name),
@@ -1470,7 +1513,12 @@ const customSettings = {
     registerLow:false, registerMid:true, registerHigh:false,
     playReference: true
   },
-  alturas:     { octave: 4 },
+  alturas:     {
+    octave: 4,
+    subMode: 'movement', // 'movement' (solo dirección) | 'intervals' (dirección + intervalo específico)
+    noteCounts: [2,3,4], // cantidad de notas activas por pregunta (mín. 1 activa)
+    selectedIntervals: ALTURAS_INTERVALS.map(i => i.name) // usado solo si subMode === 'intervals'; incluye Unísono = "misma nota"
+  },
   entonacion:  {
     voiceRange: 0, voiceRangeMidi: 60,
     selectedIntervals: musicData.intervalos.map(i => i.name),
@@ -1948,6 +1996,11 @@ function renderStudyMode() {
 
     if (currentMode === 'intervalos') {
       html += `<div style="color:var(--text-muted);font-size:0.85em;margin-bottom:10px;">${item.semitones} ${tx('semitones')}</div>`;
+      const noteNames = currentLang === 'es'
+        ? ['Do','Do♯','Re','Re♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si']
+        : ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+      const targetNote = noteNames[item.semitones % 12] + (item.semitones === 12 ? (currentLang === 'es' ? ' (octava arriba)' : ' (octave up)') : '');
+      html += `<div style="color:var(--text-muted);font-size:0.78em;margin-bottom:10px;">${tx('exampleLabel')} <strong style="color:var(--text);">${noteNames[0]} → ${targetNote}</strong></div>`;
       const ref = (currentLang === 'en' ? intervalReferencesEN : intervalReferences)[item.name];
       if (ref) {
         html += `<div style="margin-top:8px;border-top:1px solid rgba(255,255,255,0.08);padding-top:8px;text-align:left;">
@@ -1956,6 +2009,10 @@ function renderStudyMode() {
           ${ref.desc ? `<div style="font-size:0.72em;color:var(--text-muted);">${icon('down')} <em>${ref.desc.song}</em></div>` : ''}
         </div>`;
       }
+    }
+
+    if (['triadas','inversiones','septimas'].includes(currentMode)) {
+      html += `<div style="color:var(--text-muted);font-size:0.78em;margin-bottom:10px;">${tx('exampleLabel')} <strong style="color:var(--text);">${chordExampleHTML(item.intervals)}</strong></div>`;
     }
 
     if (currentMode === 'escalas' && scaleDetails[item.name]) {
@@ -2107,14 +2164,34 @@ function updateSettingsPanel() {
       </div>`;
   } else if (currentMode === 'alturas') {
     const sa = ui[currentLang].sAlturas;
-    const oct = customSettings.alturas.octave;
+    const as = customSettings.alturas;
     panel.innerHTML = `
       <div class="settings-section">
         <h4>${sa.octTitle}</h4>
         <div class="toggle-group">
-          ${[2,3,4,5].map(o => `<button class="toggle-btn ${oct===o?'active':''}" onclick="setAlturaOctave(${o})">${['Do2','Do3','Do4','Do5'][o-2]}</button>`).join('')}
+          ${[2,3,4,5].map(o => `<button class="toggle-btn ${as.octave===o?'active':''}" onclick="setAlturaOctave(${o})">${['Do2','Do3','Do4','Do5'][o-2]}</button>`).join('')}
         </div>
-      </div>`;
+      </div>
+      <div class="settings-section">
+        <h4>${sa.subModeTitle}</h4>
+        <div class="toggle-group">
+          <button class="toggle-btn ${as.subMode==='movement'?'active':''}" onclick="setAlturaSubMode('movement')">${sa.subModeMovement}</button>
+          <button class="toggle-btn ${as.subMode==='intervals'?'active':''}" onclick="setAlturaSubMode('intervals')">${sa.subModeIntervals}</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>${sa.countTitle}</h4>
+        <div class="toggle-group">
+          ${[2,3,4].map(n => `<button class="toggle-btn ${as.noteCounts.includes(n)?'active':''}" onclick="toggleAlturaCount(${n})">${n} ${sa.notesWord}</button>`).join('')}
+        </div>
+      </div>
+      ${as.subMode === 'intervals' ? `
+      <div class="settings-section">
+        <h4>${sa.intervalsTitle}</h4>
+        <div class="toggle-group">
+          ${ALTURAS_INTERVALS.map(x => `<button class="toggle-btn ${as.selectedIntervals.includes(x.name)?'active':''}" onclick="toggleAlturaInterval('${x.name}')">${dn(x.name).replace(' (','\n(')}</button>`).join('')}
+        </div>
+      </div>` : ''}`;
   } else if (currentMode === 'entonacion') {
     const se = ui[currentLang].sEntonacion;
     const ec = customSettings.entonacion;
@@ -2267,6 +2344,28 @@ function toggleSel(cat, name) {
 }
 function setAlturaOctave(o) {
   customSettings.alturas.octave = o;
+  updateSettingsPanel(); nextQuestion(false);
+}
+function setAlturaSubMode(m) {
+  customSettings.alturas.subMode = m;
+  updateSettingsPanel(); nextQuestion(false);
+}
+function toggleAlturaCount(n) {
+  const arr = customSettings.alturas.noteCounts;
+  const i = arr.indexOf(n);
+  if (i > -1) { if (arr.length > 1) arr.splice(i,1); } else arr.push(n);
+  updateSettingsPanel(); nextQuestion(false);
+}
+function toggleAlturaInterval(name) {
+  const arr = customSettings.alturas.selectedIntervals;
+  const i = arr.indexOf(name);
+  if (i > -1) {
+    // No permitir que quede activo solo el Unísono: sin al menos un intervalo real
+    // (>0 semitonos) no hay nada que distinga una respuesta de otra
+    const remaining = arr.filter(n => n !== name);
+    const hasReal = remaining.some(n => (ALTURAS_INTERVALS.find(x => x.name === n) || {}).semitones > 0);
+    if (hasReal) arr.splice(i,1);
+  } else arr.push(name);
   updateSettingsPanel(); nextQuestion(false);
 }
 function toggleEntonDir(d) {
@@ -2525,9 +2624,12 @@ async function playSound() {
       t(0, getFreq(currentQuestion.semitones, oct), '0.6');
     }
   } else if (currentMode === 'alturas') {
-    const oct = customSettings.alturas.octave || 4;
-    t(0,   getFreq(0, oct), '0.5');
-    t(900, getFreq(currentQuestion.offset, oct), '0.6');
+    const oct = currentQuestion.octave || 4;
+    const gap = 650;
+    let cum = 0;
+    const freqs = [getFreq(0, oct)];
+    currentQuestion.steps.forEach(s => { cum += s.dir === 'up' ? s.semis : s.dir === 'down' ? -s.semis : 0; freqs.push(getFreq(cum, oct)); });
+    freqs.forEach((f, i) => t(i * gap, f, i === freqs.length - 1 ? '0.7' : '0.5'));
   } else if (currentMode === 'entonacion') {
     t(0, midiFreq(currentQuestion.refMidi), '0.8');
   } else if (currentMode === 'entonAcordes' || currentMode === 'entonEscalas') {
@@ -2675,11 +2777,75 @@ function nextQuestion(autoPlay = true) {
       : Math.floor(Math.random() * 12);
     currentQuestion = { ...options[correctIndex], register: regs[Math.floor(Math.random() * regs.length)], refOffset };
   } else if (currentMode === 'alturas') {
-    const semitones = Math.floor(Math.random() * 11) + 1;
-    const isHigh = Math.random() < 0.5;
-    options = [{ name: 'Agudo ↑' }, { name: 'Grave ↓' }];
-    correctIndex = isHigh ? 0 : 1;
-    currentQuestion = { name: isHigh ? 'Agudo ↑' : 'Grave ↓', offset: isHigh ? semitones : -semitones };
+    const as = customSettings.alturas;
+    const counts = as.noteCounts.length ? as.noteCounts : [2];
+    const noteCount = counts[Math.floor(Math.random() * counts.length)];
+    const legs = noteCount - 1;
+    const intervalPool = as.subMode === 'intervals'
+      ? ALTURAS_INTERVALS.filter(x => as.selectedIntervals.includes(x.name))
+      : null;
+    if (as.subMode === 'intervals' && !intervalPool.length) { alert('Selecciona al menos un intervalo'); return; }
+    const legDelta = s => s.dir === 'up' ? s.semis : s.dir === 'down' ? -s.semis : 0;
+
+    // Genera cada salto (incluye la posibilidad de "misma nota") manteniendo el recorrido
+    // acumulado dentro de un rango razonable del piano
+    let cum = 0;
+    const steps = [];
+    for (let i = 0; i < legs; i++) {
+      let dir, semis, intervalItem;
+      for (let attempt = 0; attempt < 8; attempt++) {
+        if (as.subMode === 'intervals') {
+          intervalItem = intervalPool[Math.floor(Math.random() * intervalPool.length)];
+          semis = intervalItem.semitones;
+          dir = semis === 0 ? 'same' : (Math.random() < 0.5 ? 'up' : 'down');
+        } else {
+          dir = ['up','down','same'][Math.floor(Math.random() * 3)];
+          semis = dir === 'same' ? 0 : Math.floor(Math.random() * 11) + 1;
+        }
+        const next = cum + legDelta({ dir, semis });
+        if (next >= -14 && next <= 14) break;
+      }
+      cum += legDelta({ dir, semis });
+      steps.push({ dir, semis, intervalName: intervalItem && intervalItem.name });
+    }
+
+    // Demasiadas combinaciones posibles para listarlas todas (más con "misma nota" sumada):
+    // en ambos sub-modos se construyen distractores variando un salto de la secuencia correcta,
+    // igual que en el resto de la app
+    const arrowOf = dir => dir === 'up' ? '↑' : dir === 'down' ? '↓' : '→';
+    const labelOf = as.subMode === 'intervals'
+      ? seq => seq.map(s => `${intervalAbbr(s.intervalName)}${arrowOf(s.dir)}`).join(' ')
+      : seq => seq.map(s => arrowOf(s.dir)).join('');
+    const correctLabel = labelOf(steps);
+    const labels = new Set([correctLabel]);
+    let guard = 0;
+    const maxOptions = as.subMode === 'intervals' ? Math.min(5, intervalPool.length * 2 * legs) : Math.min(5, Math.pow(3, legs));
+    while (labels.size < maxOptions && guard < 30) {
+      guard++;
+      const copy = steps.map(s => ({ ...s }));
+      const idx = Math.floor(Math.random() * copy.length);
+      if (as.subMode === 'intervals') {
+        if (Math.random() < 0.5 && copy[idx].semis !== 0) {
+          copy[idx].dir = copy[idx].dir === 'up' ? 'down' : 'up';
+        } else {
+          const alt = intervalPool[Math.floor(Math.random() * intervalPool.length)];
+          copy[idx].intervalName = alt.name;
+          copy[idx].dir = alt.semitones === 0 ? 'same' : copy[idx].dir === 'same' ? 'up' : copy[idx].dir;
+        }
+      } else {
+        const others = ['up','down','same'].filter(d => d !== copy[idx].dir);
+        copy[idx].dir = others[Math.floor(Math.random() * others.length)];
+      }
+      labels.add(labelOf(copy));
+    }
+    const shuffled = Array.from(labels);
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    options = shuffled.map(l => ({ name: l }));
+    correctIndex = shuffled.indexOf(correctLabel);
+    currentQuestion = { steps, octave: as.octave, noteCount };
   } else if (currentMode === 'entonacion') {
     const se = customSettings.entonacion;
     const pool = musicData.intervalos.filter(x => se.selectedIntervals.includes(x.name));
@@ -2798,6 +2964,13 @@ function renderOptions(options, correctIndex) {
       refEl.innerHTML = tx('notasNoRef');
     }
     c.appendChild(refEl);
+  } else if (currentMode === 'alturas') {
+    const sa = ui[currentLang].sAlturas;
+    const n = (currentQuestion && currentQuestion.noteCount) || 2;
+    const refEl = document.createElement('p');
+    refEl.style.cssText = 'text-align:center;margin:0 0 16px;font-size:0.92em;color:var(--text-muted);';
+    refEl.innerHTML = sa.hint(n, customSettings.alturas.subMode);
+    c.appendChild(refEl);
   }
   options.forEach((opt, i) => {
     const btn = document.createElement('button');
@@ -2807,7 +2980,7 @@ function renderOptions(options, correctIndex) {
     // del progreso ya guardado de usuarios existentes del módulo Alturas.
     btn.setAttribute('data-internal', opt.name);
     if (currentMode === 'alturas') {
-      btn.innerHTML = dn(opt.name).replace(/\s*[↑↓]\s*$/, ' ' + icon(opt.name.includes('↑') ? 'up' : 'down'));
+      btn.innerHTML = dn(opt.name).replace(/↑/g, icon('up')).replace(/↓/g, icon('down')).replace(/→/g, icon('right'));
     } else {
       btn.textContent = dn(opt.name);
     }
