@@ -3088,11 +3088,20 @@ function oaOutOfRangeNotes() {
   if (hi + 2 <= 11) out.push(names[hi + 2]);
   return out;
 }
-// Ventana de respuesta: se ALARGA con más notas activas (igual que el estudio real:
-// 1183ms con 1 nota → 2028ms con las 12), interpolado linealmente.
+// Ventana de respuesta: el VALOR OBJETIVO se alarga con más notas activas (igual que el
+// estudio real: 1183ms con 1 nota → 2028ms con las 12) — pero ese valor objetivo solo se
+// exige recién en el sub-nivel 24. Como la precisión requerida, la ventana también es
+// progresiva DENTRO de cada nota: generosa en el sub-nivel 1 y se va ajustando hacia el
+// objetivo del estudio a medida que se avanza — así el primer contacto con una nota nueva
+// es realmente accesible, no solo la exigencia final. (El estudio no detalla si la ventana
+// varía dentro de los 24 niveles, solo entre cantidades de notas — esta progresión interna
+// es una extensión razonable nuestra, consistente con cómo sí varía la precisión).
+const OA_TIMEOUT_START_MS = 3500; // ventana en el sub-nivel 1, igual para cualquier cantidad de notas
 function oaTimeoutMs() {
   const n = oaState.activeNotes.length;
-  return Math.round(1183 + (n - 1) * (2028 - 1183) / 11);
+  const target = 1183 + (n - 1) * (2028 - 1183) / 11;
+  const ms = OA_TIMEOUT_START_MS - (oaState.subLevel - 1) * (OA_TIMEOUT_START_MS - target) / 23;
+  return Math.round(ms);
 }
 function oaShowsFeedback() {
   if (oaState.drill) return oaState.drill.trialIndex < oaState.drill.feedbackTrials;
