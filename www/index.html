@@ -1610,7 +1610,6 @@ async function initAudio() {
   updateStaticText();
   renderModeCards();
   renderRetoDia();
-  checkLastStudy();
   switchNavTab('learn');
   // Carga el piano Salamander en segundo plano (samples reales)
   _sampler = new Tone.Sampler({
@@ -2346,21 +2345,13 @@ function showSinkoStreak() {
   }
 }
 function showSinko(type) {
-  const imgs = { correct:'img/sinko-bien.png', celebrate:'img/sinko-celebra.png', wrong:'img/sinko-animo.png', noStudy:'img/sinko-regresa.png', streak:'img/sinko-feliz.png', studying:'img/sinko-estudiando.png' };
+  const imgs = { correct:'img/sinko-bien.png', celebrate:'img/sinko-celebra.png', wrong:'img/sinko-animo.png', streak:'img/sinko-feliz.png', studying:'img/sinko-estudiando.png' };
   const src = imgs[type]; if (!src) return;
   const el = document.getElementById('sinkoMoment'); if (!el) return;
   const img = el.querySelector('img'); if (img) img.src = src;
   if (_sinkoTimer) clearTimeout(_sinkoTimer);
   el.classList.add('visible');
   _sinkoTimer = setTimeout(() => el.classList.remove('visible'), 3200);
-}
-function checkLastStudy() {
-  try {
-    const last = localStorage.getItem('audikus_last_study');
-    if (last && (Date.now() - parseInt(last)) > 2 * 24 * 60 * 60 * 1000) {
-      setTimeout(() => showSinko('noStudy'), 1500);
-    }
-  } catch(e) {}
 }
 
 function midiNoteName(midi) {
