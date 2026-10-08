@@ -962,7 +962,7 @@ const ui = {
       progresiones:{title:'Progresiones',sub:'Secuencias Armónicas'},
       escalas:{title:'Escalas',sub:'Mayor, Menor y Modos'},
       notas:{title:'Nota Absoluta',sub:'Diatónico y Cromático'},
-      alturas:{title:'Alturas',sub:'Grave y Agudo'},
+      alturas:{title:'Contorno Melódico',sub:'Dirección e intervalos de una secuencia'},
       entonacion:{title:'Entonación',sub:'Canta el intervalo'},
       entonAcordes:{title:'Entonación Acordes',sub:'Canta cada nota del acorde'},
       entonEscalas:{title:'Entonación Escalas',sub:'Canta la escala completa'}
@@ -1013,7 +1013,7 @@ const ui = {
     analysisRec:(cat)=>`${icon('target')} <strong>Recomendación:</strong> Dedica tu próxima sesión a <strong>${cat}</strong> — es el área con mayor margen de mejora.`,
     analysisConf:(cat,a,b,n)=>`${icon('next')} <strong>Confusión frecuente:</strong> En ${cat} confundes <strong>${a}</strong> con <strong>${b}</strong> (${n} veces).`,
     analysisBased:(n)=>`Basado en ${n} respuestas registradas.`,
-    cats:{intervalos:'Intervalos',triadas:'Tríadas',inversiones:'Inversiones',septimas:'Acordes con Séptima',progresiones:'Progresiones',escalas:'Escalas',notas:'Nota Absoluta',alturas:'Alturas',entonacion:'Entonación',entonAcordes:'Entonación Acordes',entonEscalas:'Entonación Escalas'},
+    cats:{intervalos:'Intervalos',triadas:'Tríadas',inversiones:'Inversiones',septimas:'Acordes con Séptima',progresiones:'Progresiones',escalas:'Escalas',notas:'Nota Absoluta',alturas:'Contorno Melódico',entonacion:'Entonación',entonAcordes:'Entonación Acordes',entonEscalas:'Entonación Escalas'},
     sAlturas:{
       octTitle:`${icon('piano')} Registro de referencia:`,
       ansHigh:'Agudo ↑', ansLow:'Grave ↓',
@@ -1091,7 +1091,7 @@ const ui = {
       progresiones:{title:'Progressions',sub:'Harmonic Sequences'},
       escalas:{title:'Scales',sub:'Major, Minor and Modes'},
       notas:{title:'Absolute Pitch',sub:'Diatonic and Chromatic'},
-      alturas:{title:'Pitch Height',sub:'High and Low'},
+      alturas:{title:'Melodic Contour',sub:'Direction and intervals of a sequence'},
       entonacion:{title:'Intonation',sub:'Sing the interval'},
       entonAcordes:{title:'Chord Intonation',sub:'Sing each note of the chord'},
       entonEscalas:{title:'Scale Intonation',sub:'Sing the full scale'}
@@ -1142,7 +1142,7 @@ const ui = {
     analysisRec:(cat)=>`${icon('target')} <strong>Recommendation:</strong> Dedicate your next session to <strong>${cat}</strong> — it's the area with the most room for improvement.`,
     analysisConf:(cat,a,b,n)=>`${icon('next')} <strong>Frequent confusion:</strong> In ${cat} you confuse <strong>${a}</strong> with <strong>${b}</strong> (${n} times).`,
     analysisBased:(n)=>`Based on ${n} recorded answers.`,
-    cats:{intervalos:'Intervals',triadas:'Triads',inversiones:'Inversions',septimas:'Seventh Chords',progresiones:'Progressions',escalas:'Scales',notas:'Absolute Pitch',alturas:'Pitch Height',entonacion:'Intonation',entonAcordes:'Chord Intonation',entonEscalas:'Scale Intonation'},
+    cats:{intervalos:'Intervals',triadas:'Triads',inversiones:'Inversions',septimas:'Seventh Chords',progresiones:'Progressions',escalas:'Scales',notas:'Absolute Pitch',alturas:'Melodic Contour',entonacion:'Intonation',entonAcordes:'Chord Intonation',entonEscalas:'Scale Intonation'},
     sAlturas:{
       octTitle:`${icon('piano')} Reference register:`,
       ansHigh:'High ↑', ansLow:'Low ↓',
@@ -3774,12 +3774,12 @@ function _renderChatDefault() {
 
   if (_chatCtx && _chatCtx.name) {
     const modeLabels = { intervalos:'Intervalos',triadas:'Tríadas',inversiones:'Inversiones',
-      septimas:'Séptimas',escalas:'Escalas',notas:'Notas',alturas:'Alturas',
+      septimas:'Séptimas',escalas:'Escalas',notas:'Notas',alturas:'Contorno',
       intervals:'Intervals',chords:'Chords',inversions:'Inversions',
-      sevenths:'Sevenths',scales:'Scales',notes:'Notes',pitch:'Pitch' };
+      sevenths:'Sevenths',scales:'Scales',notes:'Notes',pitch:'Contour' };
     const mLabel = (currentLang==='es')
-      ? {intervalos:'Intervalos',triadas:'Tríadas',inversiones:'Inversiones',septimas:'Séptimas',escalas:'Escalas',notas:'Notas',alturas:'Alturas'}[_chatCtx.mode] || _chatCtx.mode
-      : {intervalos:'Intervals',triadas:'Triads',inversiones:'Inversions',septimas:'Sevenths',escalas:'Scales',notas:'Notes',alturas:'Pitch'}[_chatCtx.mode] || _chatCtx.mode;
+      ? {intervalos:'Intervalos',triadas:'Tríadas',inversiones:'Inversiones',septimas:'Séptimas',escalas:'Escalas',notas:'Notas',alturas:'Contorno'}[_chatCtx.mode] || _chatCtx.mode
+      : {intervalos:'Intervals',triadas:'Triads',inversiones:'Inversions',septimas:'Sevenths',escalas:'Scales',notas:'Notes',alturas:'Contour'}[_chatCtx.mode] || _chatCtx.mode;
     if (cst) cst.innerHTML = `${L.chatSubtitle} <span class="chat-context-tag">${_chatCtx.name}</span>`;
     if (cw) cw.innerHTML = currentLang==='es'
       ? `Estás practicando <strong>${_chatCtx.name}</strong>. ¿Tienes preguntas sobre este tema o cualquier otro término de la app? Puedo responderlas.`
@@ -3937,7 +3937,7 @@ function getResponse(question) {
     return '🔄 <strong>¿Qué es una Inversión de Acorde?</strong><br><br>Una inversión ocurre cuando la nota que está en el <strong>bajo (la más grave)</strong> no es la raíz del acorde.<br><br><strong>Do mayor = Do-Mi-Sol</strong><br>• <strong>Posición fundamental:</strong> Do en el bajo → Do-Mi-Sol ✓ (más estable)<br>• <strong>1ª Inversión:</strong> Mi en el bajo → Mi-Sol-Do (más ligero)<br>• <strong>2ª Inversión:</strong> Sol en el bajo → Sol-Do-Mi (inestable, de paso)<br><br>Las inversiones cambian el <strong>color y la estabilidad</strong> del acorde sin cambiar sus notas. Aprende a identificarlas escuchando la nota más grave. 👂';
 
   if (has('altura','alturas','agudo','grave') && !has('intervalo','acorde','escala'))
-    return '📶 <strong>Alturas Musicales</strong><br><br>La <strong>altura</strong> de un sonido indica si es <strong>grave (bajo)</strong> o <strong>agudo (alto)</strong>, determinada por su frecuencia (Hz).<br><br>• <strong>Grave:</strong> frecuencias bajas → contrabajo, tuba, bombo<br>• <strong>Agudo:</strong> frecuencias altas → flauta, violín, piccolo<br><br>Distinguir alturas es la habilidad más fundamental del entrenamiento auditivo — la base sobre la que se construyen los intervalos.<br><br>En la app: usa la tarjeta <strong>Alturas</strong> para entrenar esta habilidad. 👂';
+    return '📶 <strong>Alturas Musicales</strong><br><br>La <strong>altura</strong> de un sonido indica si es <strong>grave (bajo)</strong> o <strong>agudo (alto)</strong>, determinada por su frecuencia (Hz).<br><br>• <strong>Grave:</strong> frecuencias bajas → contrabajo, tuba, bombo<br>• <strong>Agudo:</strong> frecuencias altas → flauta, violín, piccolo<br><br>Distinguir alturas es la habilidad más fundamental del entrenamiento auditivo — la base sobre la que se construyen los intervalos.<br><br>En la app: usa la tarjeta <strong>Contorno Melódico</strong> para entrenar esta habilidad. 👂';
 
   if (has('entonacion','entonación','afinar','afinacion') && !has('escala','acorde'))
     return '🎤 <strong>Entonación</strong><br><br>Entonar significa producir con la voz una nota a la <strong>altura exacta</strong> que se necesita, ni más alta (sostenida) ni más baja (bemolada).<br><br>La entonación se entrena:<br>• Escuchando la nota → cantándola → comparando<br>• Con un instrumento de referencia<br>• Practicando intervalos vocales<br><br>Cantar los intervalos que estudias en la app acelera enormemente el aprendizaje del oído musical. La tarjeta <strong>Entonación</strong> usa el micrófono para evaluar tu afinación en tiempo real. 🎯';
@@ -4167,7 +4167,7 @@ function getResponseEN(question) {
     return '🔄 <strong>What is a Chord Inversion?</strong><br><br>An inversion occurs when the note in the <strong>bass (the lowest note)</strong> is not the root of the chord.<br><br><strong>C major = C-E-G</strong><br>• <strong>Root Position:</strong> C in bass → C-E-G ✓ (most stable)<br>• <strong>1st Inversion:</strong> E in bass → E-G-C (lighter)<br>• <strong>2nd Inversion:</strong> G in bass → G-C-E (unstable, passing)<br><br>Inversions change the <strong>color and stability</strong> of a chord without changing its notes. Learn to identify them by listening to the lowest note. 👂';
 
   if (has('pitch height','high and low','high sound','low sound') && !has('interval','chord','scale'))
-    return '📶 <strong>Pitch Height</strong><br><br>The <strong>pitch</strong> of a sound indicates whether it is <strong>low (grave)</strong> or <strong>high (acute)</strong>, determined by its frequency (Hz).<br><br>• <strong>Low:</strong> low frequencies → bass guitar, tuba, bass drum<br>• <strong>High:</strong> high frequencies → flute, violin, piccolo<br><br>Distinguishing pitch height is the most fundamental skill in ear training — the foundation on which intervals are built.<br><br>In the app: use the <strong>Pitch Height</strong> card to train this skill. 👂';
+    return '📶 <strong>Pitch Height</strong><br><br>The <strong>pitch</strong> of a sound indicates whether it is <strong>low (grave)</strong> or <strong>high (acute)</strong>, determined by its frequency (Hz).<br><br>• <strong>Low:</strong> low frequencies → bass guitar, tuba, bass drum<br>• <strong>High:</strong> high frequencies → flute, violin, piccolo<br><br>Distinguishing pitch height is the most fundamental skill in ear training — the foundation on which intervals are built.<br><br>In the app: use the <strong>Melodic Contour</strong> card to train this skill. 👂';
 
   if (has('intonation','tuning','sing','voice') && !has('scale','chord'))
     return '🎤 <strong>Intonation</strong><br><br>Intonation means producing a note with your voice at the <strong>exact pitch</strong> needed — not too high (sharp) or too low (flat).<br><br>Intonation is trained by:<br>• Listening to a note → singing it → comparing<br>• Using a reference instrument<br>• Practicing vocal intervals<br><br>Singing the intervals you study in the app greatly accelerates ear training. The <strong>Intonation</strong> card uses the microphone to evaluate your tuning in real time. 🎯';
