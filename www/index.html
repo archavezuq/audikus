@@ -73,26 +73,6 @@
     }
     .screen.active { display: flex; }
 
-    /* ── Mode Chips Bar ───────────────────────────────────────── */
-    .chips-bar {
-      display: flex; gap: 7px; padding: 9px 14px;
-      overflow-x: auto; scrollbar-width: none; flex-shrink: 0;
-      border-bottom: 1px solid var(--border); background: var(--bg);
-      position: sticky; top: 0; z-index: 5;
-    }
-    .chips-bar::-webkit-scrollbar { display: none; }
-    .mode-chip {
-      height: 30px; padding: 0 12px; border-radius: 7px;
-      border: 1.5px solid var(--border); background: transparent;
-      color: var(--text-muted); font-size: 12px; font-weight: 500;
-      cursor: pointer; white-space: nowrap; transition: all 0.2s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .mode-chip.active {
-      background: var(--pri-cont); border-color: var(--primary);
-      color: var(--primary); font-weight: 700;
-    }
-
     /* ── Mode Cards (learn screen) ────────────────────────────── */
     .cards-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; padding: 14px; }
     @media (max-width: 340px) { .cards-grid { grid-template-columns: 1fr; } }
@@ -584,24 +564,10 @@
   <!-- CONTENT AREA -->
   <div class="content-area">
 
-    <!-- APRENDER -->
+    <!-- INICIO -->
     <div class="screen active" id="screen-learn">
       <div id="retoDiaCard" style="margin:12px 14px 0;"></div>
-      <div class="chips-bar" id="modeChipsLearn"></div>
       <div class="cards-grid" id="learnCards"></div>
-    </div>
-
-    <!-- PRACTICAR -->
-    <div class="screen" id="screen-practice">
-      <div class="chips-bar" id="modeChipsPractice"></div>
-      <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:28px 16px;">
-        <div style="text-align:center;max-width:260px;">
-          <div style="margin-bottom:14px;"><img src="img/modo-practica.svg" style="width:56px;height:56px;"></div>
-          <div id="practiceTitle" style="font-size:16px;font-weight:700;margin-bottom:8px;">Practicar</div>
-          <div id="practiceSub" style="font-size:12px;color:var(--text-muted);margin-bottom:22px;line-height:1.6;">Selecciona un modo arriba y presiona Comenzar</div>
-          <button class="btn btn-success" onclick="openExerciseOverlay();setViewMode('test')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;flex-shrink:0"><path d="M8 5.5v13l10-6.5z"></path></svg> Comenzar</button>
-        </div>
-      </div>
     </div>
 
     <!-- PROGRESO -->
@@ -648,19 +614,13 @@
 
   </div><!-- /content-area -->
 
-  <!-- BOTTOM NAV (5 tabs) -->
+  <!-- BOTTOM NAV (4 tabs) -->
   <div class="bottom-nav">
     <button class="nav-btn active" id="nav-learn" onclick="switchNavTab('learn')">
       <div class="nav-indicator">
         <svg class="nav-svg" viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
       </div>
-      <span class="nav-label" id="navLabelLearn">Aprender</span>
-    </button>
-    <button class="nav-btn" id="nav-practice" onclick="switchNavTab('practice')">
-      <div class="nav-indicator">
-        <svg class="nav-svg" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-      </div>
-      <span class="nav-label" id="navLabelPractice">Practicar</span>
+      <span class="nav-label" id="navLabelLearn">Inicio</span>
     </button>
     <button class="nav-btn" id="nav-racha" onclick="switchNavTab('racha')">
       <div class="nav-indicator">
@@ -943,8 +903,7 @@ const ui = {
     overlaySubtitle:'Presiona para activar el sonido y comenzar',
     overlayBtn:'▶ INICIAR',
     btnStudy:'Aprender', btnTest:'Practicar', btnProgress:'Mi Progreso',
-    navLearn:'Aprender', navPractice:'Practicar', navRacha:'Racha', navCamino:'Camino', navProgress:'Progreso', navSettings:'Ajustes',
-    practiceTitle:'Practicar', practiceSub:'Selecciona un modo arriba y presiona Comenzar',
+    navLearn:'Inicio', navRacha:'Racha', navCamino:'Camino', navProgress:'Progreso', navSettings:'Ajustes',
     settingsScreen:'Ajustes', segStudy:'Aprender', segTest:'Practicar',
     studyTitle:'Aprender — Explora y Aprende',
     studySubtitle:'Presiona cada tarjeta para escuchar el sonido',
@@ -1050,8 +1009,7 @@ const ui = {
     overlaySubtitle:'Tap to activate sound and start',
     overlayBtn:'▶ START',
     btnStudy:'Learn', btnTest:'Practice', btnProgress:'My Progress',
-    navLearn:'Learn', navPractice:'Practice', navRacha:'Streak', navCamino:'Path', navProgress:'Progress', navSettings:'Settings',
-    practiceTitle:'Practice', practiceSub:'Select a mode above and press Start',
+    navLearn:'Home', navRacha:'Streak', navCamino:'Path', navProgress:'Progress', navSettings:'Settings',
     settingsScreen:'Settings', segStudy:'Learn', segTest:'Practice',
     studyTitle:'Learn — Explore and Listen',
     studySubtitle:'Tap each card to hear the sound',
@@ -1590,14 +1548,14 @@ function renderTutorialSlide() {
   if (btn) btn.textContent = isLast ? (currentLang==='es'?'¡Comenzar! →':'Start! →') : (currentLang==='es'?'Siguiente →':'Next →');
   // Translate slides
   const esSlides = [
-    { t:'Aprender', b:'Encuentra las tarjetas de cada categoría: intervalos, tríadas, escalas y más. En modo Aprender estudias los conceptos y practicas la entonación cantando.' },
+    { t:'Inicio', b:'Encuentra las tarjetas de cada categoría: intervalos, tríadas, escalas y más. Dentro de cada una eliges Aprender (escuchar y explorar) o Practicar (responder ejercicios).' },
     { t:'Practicar', b:'Escucha intervalos, acordes y escalas con un piano real e identifícalos. La app registra tu progreso y muestra en qué mejorar.' },
     { t:'Entonación', b:'Las tarjetas de entonación usan el micrófono. Canta el intervalo, acorde o escala que pide la app y ella detecta tu afinación en tiempo real.' },
     { t:'Tu racha diaria', b:'Practica aunque sea unos minutos cada día. La constancia es la clave del oído musical.' },
     { t:'¡Todo listo, ' + (userName||'músico') + '!', b:'Ya conoces lo básico. Presiona Comenzar y empieza tu primera sesión. ¡Buena suerte!' }
   ];
   const enSlides = [
-    { t:'Learn', b:'Find cards for each category: intervals, triads, scales and more. In Learn mode you study concepts and practice intonation by singing.' },
+    { t:'Home', b:'Find cards for each category: intervals, triads, scales and more. Inside each one you choose Learn (listen and explore) or Practice (answer exercises).' },
     { t:'Practice', b:'Listen to intervals, chords and scales played on a real piano and identify them. The app tracks your progress and shows what to improve.' },
     { t:'Intonation', b:'Intonation cards use the microphone. Sing the interval, chord or scale the app requests and it detects your pitch in real time.' },
     { t:'Your daily streak', b:'Practice for even a few minutes every day. Consistency is the key to a musical ear.' },
@@ -1651,7 +1609,6 @@ async function initAudio() {
   document.getElementById('tutorialOverlay').style.display = 'none';
   updateStaticText();
   renderModeCards();
-  renderModeChips();
   renderRetoDia();
   checkLastStudy();
   switchNavTab('learn');
@@ -1726,23 +1683,18 @@ function updateStaticText() {
   if (pc1) pc1.innerHTML = '<img src="img/siguiente.svg" style="width:20px;height:20px;vertical-align:middle;margin-right:6px;"> ' + L.btnNext.replace(/^[^\s]+\s/,'');
   if (pc2) pc2.innerHTML = icon('restart') + ' '  + L.btnReset.replace(/^[^\s]+\s/,'');
   // Nav labels
-  ['navLabelLearn','navLabelPractice','navLabelRacha','navLabelCamino','navLabelProgress','navLabelSettings'].forEach((id,i) => {
+  ['navLabelLearn','navLabelRacha','navLabelCamino','navLabelProgress','navLabelSettings'].forEach((id,i) => {
     const el = document.getElementById(id);
-    if (el) el.textContent = [L.navLearn, L.navPractice, L.navRacha, L.navCamino, L.navProgress, L.navSettings][i];
+    if (el) el.textContent = [L.navLearn, L.navRacha, L.navCamino, L.navProgress, L.navSettings][i];
   });
-  // Practice screen title/sub
-  const ptEl = document.getElementById('practiceTitle');
-  if (ptEl) ptEl.textContent = L.practiceTitle;
-  const psEl = document.getElementById('practiceSub');
-  if (psEl) psEl.textContent = L.practiceSub;
   // Settings screen title
   const ssEl = document.getElementById('settingsScreenTitle');
   if (ssEl) ssEl.textContent = L.settingsScreen;
   // Segmented buttons (study/test)
   const sgS = document.getElementById('segStudy'); if (sgS) sgS.textContent = L.segStudy;
   const sgT = document.getElementById('segTest');  if (sgT) sgT.textContent = L.segTest;
-  // Modo cards y chips (regenerar con nuevo idioma)
-  if (audioReady) { renderModeCards(); renderModeChips(); }
+  // Modo cards (regenerar con nuevo idioma)
+  if (audioReady) { renderModeCards(); }
   // Footer — static, no update needed
   // Chat
   const ct = document.getElementById('chatTitle'); if (ct) ct.textContent = L.chatTitle;
@@ -1844,34 +1796,8 @@ function selectModeCard(mode) {
   stopAllSound();
   currentMode = mode;
   renderModeCards();
-  renderModeChips();
   openExerciseOverlay();
   setViewMode(TEST_ONLY_MODES.includes(mode) ? 'test' : 'study');
-}
-
-function renderModeChips() {
-  const L = ui[currentLang];
-  const learnModes    = ['intervalos','triadas','inversiones','septimas','progresiones','escalas','notas','alturas'];
-  const practiceModes = ['intervalos','triadas','inversiones','septimas','progresiones','escalas','notas','alturas','entonacion'];
-  const makeChips = (list) => list.map(m => {
-    const label = (L.cards[m] && L.cards[m].title) || m;
-    const active = m === currentMode ? ' active' : '';
-    return `<button class="mode-chip${active}" data-mode="${m}" onclick="selectModeChip('${m}')">${label}</button>`;
-  }).join('');
-  const elLearn = document.getElementById('modeChipsLearn');
-  if (elLearn) elLearn.innerHTML = makeChips(learnModes);
-  const elPractice = document.getElementById('modeChipsPractice');
-  if (elPractice) elPractice.innerHTML = makeChips(practiceModes);
-}
-
-function selectModeChip(mode) {
-  stopAllSound();
-  currentMode = mode;
-  renderModeCards();
-  renderModeChips();
-  const seg = document.querySelector('.seg-control');
-  if (seg) seg.style.display = TEST_ONLY_MODES.includes(mode) ? 'none' : '';
-  if (TEST_ONLY_MODES.includes(mode) && viewMode !== 'test') { viewMode = 'test'; updateView(); }
 }
 
 // ==================== VISTA ====================
@@ -1914,7 +1840,6 @@ function setMode(mode) {
   currentMode = mode;
   if (TEST_ONLY_MODES.includes(mode)) viewMode = 'test';
   renderModeCards();
-  renderModeChips();
   openExerciseOverlay();
   updateView();
   scrollToExerciseArea();
@@ -3357,7 +3282,6 @@ function startRetoDia() {
   const cfg = getRetoDiaConfig();
   currentMode = cfg.mode;
   renderModeCards();
-  renderModeChips();
   openExerciseOverlay();
   setViewMode('test');
 }
@@ -4522,7 +4446,7 @@ function renderRachaScreen() {
         ${currentLang==='es'?`Faltan <strong style="color:#e8e6f5;">${daysLeft}</strong> días para la insignia de ${nextMs}.`:`<strong style="color:#e8e6f5;">${daysLeft}</strong> days until the ${nextMs}-day badge.`}
       </div>
     </div>
-    <button onclick="switchNavTab('practice')" style="margin-top:14px;width:100%;padding:15px;border-radius:14px;border:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;background:${doneToday?'rgba(66,229,163,0.15)':'#42e5a3'};color:${doneToday?'#42e5a3':'#063023'};box-shadow:${doneToday?'none':'0 0 26px rgba(66,229,163,0.35)'};transition:all .2s;">
+    <button onclick="switchNavTab('learn')" style="margin-top:14px;width:100%;padding:15px;border-radius:14px;border:none;cursor:pointer;font-family:inherit;font-size:15px;font-weight:800;background:${doneToday?'rgba(66,229,163,0.15)':'#42e5a3'};color:${doneToday?'#42e5a3':'#063023'};box-shadow:${doneToday?'none':'0 0 26px rgba(66,229,163,0.35)'};transition:all .2s;">
       ${doneToday?(currentLang==='es'?'✓ ¡Practicaste hoy!':'✓ Practiced today!'):(currentLang==='es'?'Ir a Practicar':'Go Practice')}
     </button>`;
 }
