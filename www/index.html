@@ -1062,7 +1062,9 @@ const ui = {
       introBtn:'Entendido, empezar',
       familiarizeBody:(name)=>`Antes de empezar el examen, escucha <strong>${name}</strong> en sus distintos registros, las veces que quieras. Cuando ya la tengas en el oído, presiona Comenzar — ahí sí entra el cronómetro.`,
       familiarizeListenBtn:'Escuchar',
-      familiarizeStartBtn:'Comenzar'
+      familiarizeStartBtn:'Comenzar',
+      resetProgress:'Reiniciar progreso',
+      resetConfirm:'¿Reiniciar todo tu progreso de Oído Absoluto? Volverás a empezar desde la nota de partida. Esta acción no se puede deshacer.'
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Tu rango vocal:`,
@@ -1223,7 +1225,9 @@ const ui = {
       introBtn:'Got it, start',
       familiarizeBody:(name)=>`Before the quiz starts, listen to <strong>${name}</strong> across its registers, as many times as you like. Once it's in your ear, press Start — that's when the timer kicks in.`,
       familiarizeListenBtn:'Listen',
-      familiarizeStartBtn:'Start'
+      familiarizeStartBtn:'Start',
+      resetProgress:'Reset progress',
+      resetConfirm:'Reset all your Perfect Pitch progress? You will start over from the starting note. This cannot be undone.'
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Your vocal range:`,
@@ -2447,7 +2451,8 @@ function updateSettingsPanel() {
         ${oaState.graduated ? `<p style="font-size:0.88em;color:#f5b54a;font-weight:700;margin-top:8px;">${icon('trophy',14,'#f5b54a')} ${L.graduatedBadge}</p>` : ''}
       </div>
       <div class="settings-section">
-        <button class="btn" style="width:100%;background:var(--card-hover);border:1px solid var(--border);font-size:0.85em;" onclick="showOaIntroModal()">${icon('book')} ${L.replayIntro}</button>
+        <button class="btn" style="width:100%;margin-bottom:10px;background:var(--card-hover);border:1px solid var(--border);font-size:0.85em;" onclick="showOaIntroModal()">${icon('book')} ${L.replayIntro}</button>
+        <button class="btn" style="width:100%;background:var(--card-hover);border:1px solid var(--danger);color:var(--danger);font-size:0.85em;" onclick="resetOaProgress()">${icon('restart')} ${L.resetProgress}</button>
       </div>`;
   } else if (currentMode === 'entonacion') {
     const se = ui[currentLang].sEntonacion;
@@ -3311,6 +3316,20 @@ function toggleOaManualNote(name) {
   if (!customSettings.oidoAbsoluto.manualNotes.includes(name)) customSettings.oidoAbsoluto.manualNotes.push(name);
   saveOaState();
   updateSettingsPanel();
+}
+function resetOaProgress() {
+  const L = ui[currentLang].sOidoAbsoluto;
+  if (!confirm(L.resetConfirm)) return;
+  oaState = {
+    activeNotes: [customSettings.oidoAbsoluto.startNote],
+    subLevel: 1, attempts: [], finalPasses: 0, thirdPassAt: null,
+    graduated: false, graduatedAt: null, weakDrillCounter: 0, drill: null,
+    needsFamiliarization: true, lastAddedNote: customSettings.oidoAbsoluto.startNote
+  };
+  customSettings.oidoAbsoluto.manualNotes = [];
+  saveOaState();
+  updateSettingsPanel();
+  if (currentMode === 'oidoAbsoluto' && viewMode === 'test') nextQuestion();
 }
 
 // ==================== PREGUNTAS ====================
