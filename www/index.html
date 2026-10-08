@@ -1175,7 +1175,7 @@ const termEN = {
   'i - iv - N6 - V - i (Menor)':'i - iv - N6 - V - i (Minor)',
   'i - iv - It+6 - V - i (Menor)':'i - iv - It+6 - V - i (Minor)',
   'i - iv - Fr+6 - V - i (Menor)':'i - iv - Fr+6 - V - i (Minor)',
-  'i - iv - Ger+6 - I6/4 - V - i (Menor)':'i - iv - Ger+6 - I6/4 - V - i (Minor)'
+  'i - iv - Ger+6 - i6/4 - V - i (Menor)':'i - iv - Ger+6 - i6/4 - V - i (Minor)'
 };
 function dn(name) { return currentLang==='es' ? name : (termEN[name]||name); }
 // Extrae la abreviatura entre paréntesis de un nombre de intervalo, p.ej. "Tercera mayor (M3)" → "M3"
@@ -1368,15 +1368,17 @@ const musicData = {
     // i→VI: C y Eb comunes + G sube; VI→III: Eb común + 2 bajan; III→VII: Bb común + 2 bajan
     { name:'i - VI - III - VII (Menor)',roots:[0,8,3,10], chords:[[0,3,7],[0,3,8],[-2,3,7],[-2,2,5]] },
     // iv→It+6: C y Ab comunes, F sube a F# (doblando la tónica Do, no el bajo — evita 8as paralelas);
-    // It+6→V: Ab(bajo) baja a Sol, F# sube a Sol (resolución característica hacia el unísono/8va)
-    { name:'i - iv - It+6 - V - i (Menor)', roots:[0,5,8,7,0], chords:[[0,3,7],[0,5,8],[0,6,12],[-1,7,14],[0,7,12]] },
+    // It+6→V: Ab(bajo) baja a Sol, F# sube a Sol (resolución característica hacia el unísono/8va);
+    // V→i: Re sube a Mib (no baja a Do) para completar la tríada final con su 3ª — bajarlo a Do
+    // dejaba el acorde final incompleto (solo 1-5, sin 3ª)
+    { name:'i - iv - It+6 - V - i (Menor)', roots:[0,5,8,7,0], chords:[[0,3,7],[0,5,8],[0,6,12],[-1,7,14],[0,7,15]] },
     // iv→Fr+6: Do común, Re ya anticipa el V (queda como nota común); Fr+6→V: reutiliza el voicing de V
     // ya existente en la app — Re común, Ab baja y F# sube a Sol
     { name:'i - iv - Fr+6 - V - i (Menor)', roots:[0,5,8,7,0], chords:[[0,3,7],[0,5,8],[0,2,6],[-1,2,7],[0,3,7]] },
     // iv→Ger+6: Do y Mib comunes, F sube a F#. Ger+6→V directo da 5as paralelas (el error clásico de
-    // manual) — se resuelve vía cadencial 6/4 (mismo bajo que V): Ger+6→I6/4→V, con la 6ª y 4ª
+    // manual) — se resuelve vía cadencial 6/4 (mismo bajo que V): Ger+6→i6/4→V, con la 6ª y 4ª
     // bajando por grado a la 5ª y 3ª de V, la resolución "64-53" característica de toda cadencia.
-    { name:'i - iv - Ger+6 - I6/4 - V - i (Menor)', roots:[0,5,8,7,7,0], chords:[[0,3,7],[0,5,8],[0,3,6],[0,3,7],[-1,2,7],[0,3,7]] }
+    { name:'i - iv - Ger+6 - i6/4 - V - i (Menor)', roots:[0,5,8,7,7,0], chords:[[0,3,7],[0,5,8],[0,3,6],[0,3,7],[-1,2,7],[0,3,7]] }
   ],
   notas: [
     { name:'Do',     semitones:0  }, { name:'Do♯',    semitones:1  },
@@ -1466,7 +1468,7 @@ const harmonicFunctions = {
       'Napolitana':   [ {root:1, bass:-7, chord:[-4,1,8]} ],
       // Sexta aumentada (Italiana/Francesa/Alemana): bajo en ♭6 (root=8, bass=-4 por defecto), las 3
       // conectan limpio desde iv (comparten C; solo se altera F->F#, y en Fr/Ger también Ab/Eb).
-      // La Alemana resolviendo directo a V da 5as paralelas — ver 'i - iv - Ger+6 - I6/4 - V - i (Menor)'
+      // La Alemana resolviendo directo a V da 5as paralelas — ver 'i - iv - Ger+6 - i6/4 - V - i (Menor)'
       // en musicData.progresiones para la resolución correcta vía cadencial 6/4.
       'Sexta Aumentada': [ {root:8, chord:[0,6,12]}, {root:8, chord:[0,2,6]}, {root:8, chord:[0,3,6]} ]
     }
@@ -1477,18 +1479,59 @@ const harmonicFunctions = {
 // que representa "misma nota" en el sub-modo Intervalos específicos. No se mezcla con el
 // módulo Intervalos para no alterar su propia selección.
 const ALTURAS_INTERVALS = [{ name:'Unísono (P1)', semitones:0 }, ...musicData.intervalos];
-// Reutilizada también para mostrar ejemplos de notas en tarjetas de acordes (Tríadas/Inversiones/Séptimas)
-function semitonesToAbbr(semi) {
-  const item = ALTURAS_INTERVALS.find(x => x.semitones === semi);
-  return item ? intervalAbbr(item.name) : '';
+
+// ── Deletreo correcto de acordes (ejemplos de notas en Tríadas/Inversiones/Séptimas) ──────
+// Clave del problema: el nombre de una nota depende de la FUNCIÓN que cumple en el acorde
+// (3ª, 5ª, 7ª...), no solo de la distancia en semitonos — una 3ª menor es Mib, no Re#,
+// aunque ambas caigan en el mismo semitono.
+const LETTER_NATURAL = [0,2,4,5,7,9,11]; // Do Re Mi Fa Sol La Si (clase de altura natural)
+const LETTERS_ES = ['Do','Re','Mi','Fa','Sol','La','Si'];
+const LETTERS_EN = ['C','D','E','F','G','A','B'];
+// Calidad del intervalo según distancia en letras (0=unísono..6=7ª) y semitonos reales
+const QUALITY_TABLE = [
+  {0:'P',1:'A'},
+  {0:'d',1:'m',2:'M',3:'A'},
+  {2:'d',3:'m',4:'M',5:'A'},
+  {4:'d',5:'P',6:'A'},
+  {6:'d',7:'P',8:'A'},
+  {7:'d',8:'m',9:'M',10:'A'},
+  {9:'d',10:'m',11:'M',12:'A'}
+];
+function qualityLabel(letterSteps, semis) {
+  const row = QUALITY_TABLE[letterSteps] || {};
+  return (row[semis] || '?') + (letterSteps + 1);
 }
-function chordExampleHTML(intervals) {
-  const noteNames = currentLang === 'es'
-    ? ['Do','Do♯','Re','Re♯','Mi','Fa','Fa♯','Sol','Sol♯','La','La♯','Si']
-    : ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
-  return intervals.map((semi, i) => {
-    const name = noteNames[((semi % 12) + 12) % 12];
-    return i === 0 ? name : `${name} (${semitonesToAbbr(semi)})`;
+function accidentalSym(diff) { return diff === 0 ? '' : (diff > 0 ? '♯'.repeat(diff) : '♭'.repeat(-diff)); }
+function letterName(letterIdx, diff) { return (currentLang === 'es' ? LETTERS_ES : LETTERS_EN)[letterIdx % 7] + accidentalSym(diff); }
+// A qué grado (pasos de letra desde la raíz) corresponde cada nota extra del acorde;
+// por defecto son 3ª-5ª-7ª-9ª... (acordes por terceras); Sus2/Sus4 reemplazan la 3ª
+const CHORD_EXTRA_STEPS = { 'Sus2':[1,4], 'Sus4':[3,4] };
+// Deletrea un acorde en posición fundamental, partiendo siempre de Do (raíz = letterIdx 0, sin alteración)
+function chordRootSpelling(chordName, intervals) {
+  const extra = CHORD_EXTRA_STEPS[chordName] || intervals.slice(1).map((_, i) => 2 + i * 2);
+  return intervals.map((pc, i) => {
+    const letterIdx = i === 0 ? 0 : extra[i - 1];
+    return { letterIdx, diff: pc - LETTER_NATURAL[letterIdx], pc };
+  });
+}
+function chordExampleHTML(item) {
+  let tones;
+  if (item.name.includes(' — ')) {
+    // Inversión: mismas notas que la tríada en posición fundamental, solo reordenadas
+    const [quality, posLabel] = item.name.split(' — ');
+    const invIdx = { 'Fundamental':0, '1ª Inversión':1, '2ª Inversión':2 }[posLabel] || 0;
+    const base = musicData.triadas.find(t => t.name === quality);
+    const rootTones = chordRootSpelling(quality, base.intervals);
+    tones = [...rootTones.slice(invIdx), ...rootTones.slice(0, invIdx)];
+  } else {
+    tones = chordRootSpelling(item.name, item.intervals);
+  }
+  const bass = tones[0];
+  return tones.map((t, i) => {
+    if (i === 0) return letterName(t.letterIdx, t.diff);
+    const steps = ((t.letterIdx - bass.letterIdx) % 7 + 7) % 7;
+    const semis = ((t.pc - bass.pc) % 12 + 12) % 12;
+    return `${letterName(t.letterIdx, t.diff)} (${qualityLabel(steps, semis)})`;
   }).join(' – ');
 }
 
@@ -2012,7 +2055,7 @@ function renderStudyMode() {
     }
 
     if (['triadas','inversiones','septimas'].includes(currentMode)) {
-      html += `<div style="color:var(--text-muted);font-size:0.78em;margin-bottom:10px;">${tx('exampleLabel')} <strong style="color:var(--text);">${chordExampleHTML(item.intervals)}</strong></div>`;
+      html += `<div style="color:var(--text-muted);font-size:0.78em;margin-bottom:10px;">${tx('exampleLabel')} <strong style="color:var(--text);">${chordExampleHTML(item)}</strong></div>`;
     }
 
     if (currentMode === 'escalas' && scaleDetails[item.name]) {
@@ -3865,7 +3908,7 @@ function getResponse(question) {
     return '🎼 <strong>Napolitana (♭II, o "N6")</strong><br><br>Un acorde <strong>mayor</strong> construido sobre el <strong>2º grado bajado</strong> (♭II) — en Do menor, Reb-Fa-Lab. Casi siempre se usa en <strong>primera inversión</strong> (de ahí "sexta napolitana"), con la <strong>3ª en el bajo</strong>.<br><br><strong>Por qué en 1ª inversión:</strong> la 3ª de Reb mayor es Fa — la misma nota que ya usa el bajo del <strong>iv</strong>. Eso hace que la Napolitana se conecte de forma muy suave: llega directo desde el acorde iv sin mover el bajo.<br><br><strong>Resolución:</strong> el Reb (la "nota napolitana") baja a la sensible; el bajo sube por grado hacia V.<br><br>Progresión típica: <strong>iv — N6 — V — i</strong>. Es función <strong>Subdominante</strong> intensificada — mismo lugar que iv, con un color mucho más oscuro y cromático. Muy común en música clásica, flamenca y de terror/suspenso. 🎭';
 
   if (has('sexta aumentada','sexta italiana','sexta francesa','sexta alemana','it+6','fr+6','ger+6','it 6','fr 6','ger 6'))
-    return '🎼 <strong>Sextas Aumentadas (It+6 / Fr+6 / Ger+6)</strong><br><br>Tres acordes construidos sobre el <strong>♭6 en el bajo</strong>, con una <strong>6ª aumentada</strong> hacia el 4º grado elevado (♯4) — en Do menor, Lab (bajo) hasta Fa♯. Los dos extremos resuelven <strong>hacia afuera</strong>, al unísono/8ª de Sol (el ♭6 baja, el ♯4 sube) — la razón del nombre.<br><br><strong>Italiana:</strong> Lab — Do — Fa♯ (solo 3 notas, se dobla la tónica)<br><strong>Francesa:</strong> Lab — Do — Re — Fa♯ (agrega el 2º grado, que queda como nota común con el V siguiente)<br><strong>Alemana:</strong> Lab — Do — Mib — Fa♯ (agrega el ♭3 — enarmónicamente es un acorde de Dominante 7)<br><br><strong>⚠️ El error clásico:</strong> la Alemana resolviendo directo a V produce <strong>quintas paralelas</strong> (entre el bajo y el ♭3). La solución de manual: pasar primero por un <strong>6/4 cadencial</strong> (Ger+6 → I6/4 → V), que comparte el mismo bajo que V y evita el problema.<br><br>Las tres cumplen función <strong>Subdominante</strong> intensificada — se derivan del acorde iv, con la ♭6 ya presente y el 4º grado alterado a ♯4. 🎯';
+    return '🎼 <strong>Sextas Aumentadas (It+6 / Fr+6 / Ger+6)</strong><br><br>Tres acordes construidos sobre el <strong>♭6 en el bajo</strong>, con una <strong>6ª aumentada</strong> hacia el 4º grado elevado (♯4) — en Do menor, Lab (bajo) hasta Fa♯. Los dos extremos resuelven <strong>hacia afuera</strong>, al unísono/8ª de Sol (el ♭6 baja, el ♯4 sube) — la razón del nombre.<br><br><strong>Italiana:</strong> Lab — Do — Fa♯ (solo 3 notas, se dobla la tónica)<br><strong>Francesa:</strong> Lab — Do — Re — Fa♯ (agrega el 2º grado, que queda como nota común con el V siguiente)<br><strong>Alemana:</strong> Lab — Do — Mib — Fa♯ (agrega el ♭3 — enarmónicamente es un acorde de Dominante 7)<br><br><strong>⚠️ El error clásico:</strong> la Alemana resolviendo directo a V produce <strong>quintas paralelas</strong> (entre el bajo y el ♭3). La solución de manual: pasar primero por un <strong>6/4 cadencial</strong> (Ger+6 → i6/4 → V), que comparte el mismo bajo que V y evita el problema.<br><br>Las tres cumplen función <strong>Subdominante</strong> intensificada — se derivan del acorde iv, con la ♭6 ya presente y el 4º grado alterado a ♯4. 🎯';
 
   if (has('funcion tonal','función tonal','funcion armonica','función armónica','tonica dominante subdominante','T S D'))
     return `${icon('score')} <strong>Función Tonal</strong><br><br>Concepto sistematizado por Hugo Riemann (1893) que clasifica cada acorde de una tonalidad según su <strong>comportamiento funcional</strong> dentro de la jerarquía tonal, independientemente de su posición en la escala. Cada grado pertenece a una de estas regiones:<br><br><strong>${icon('dot',12,'var(--success)')} Tónica (T)</strong> — reposo, punto de llegada y partida<br>&nbsp;&nbsp;→ <strong>I</strong> (el único grado realmente estable)<br><br><strong>${icon('dot',12,'var(--warning)')} Subdominante (S)</strong> — tensión moderada, se aleja de la tónica<br>&nbsp;&nbsp;→ <strong>ii</strong> y <strong>IV</strong> (diatónicos)<br>&nbsp;&nbsp;→ <strong>iv</strong> (prestado del modo menor paralelo — ver Subdominante Menor)<br>&nbsp;&nbsp;→ <strong>♭II/N6</strong> (napolitana — ver Napolitana)<br>&nbsp;&nbsp;→ <strong>It+6/Fr+6/Ger+6</strong> (sextas aumentadas — ver Sexta Aumentada)<br><br><strong>${icon('dot',12,'var(--danger)')} Dominante (D)</strong> — tensión máxima, exige resolver a la tónica<br>&nbsp;&nbsp;→ <strong>V</strong> y <strong>vii°/viiø7</strong> (diatónicos — comparten el mismo tritono)<br>&nbsp;&nbsp;→ <strong>V/V</strong> y otras dominantes secundarias (aplicadas a un grado que no es I — ver Dominante Secundaria)<br><br><strong>${icon('dot',12,'var(--primary)')} Mediante</strong> — sustituto de tónica más débil/coloreado, comparte 2 notas con I<br>&nbsp;&nbsp;→ <strong>iii</strong> y <strong>vi</strong> en mayor · <strong>III</strong> en menor (ver Mediante)<br><br><strong>Progresiones funcionales típicas:</strong><br>• Cadencia auténtica perfecta: D→T (V→I)<br>• Cadencia plagal: S→T (IV→I)<br>• Progresión ii–V–I: S→D→T (fundamental en jazz y armonía tonal clásica)<br>• Cadena de dominantes: S→D/D→D→T (ii→V/V→V→I, intensifica la llegada a D)<br><br>El movimiento funcional opera con mayor peso cuando hay resolución de disonancias (la séptima del dominante baja, la sensible sube). ${icon('target')}`;
@@ -4057,7 +4100,7 @@ function getResponseEN(question) {
   if (has('minor triad','minor chord') && !has('7th','seventh'))
     return '🎹 <strong>Minor Triad</strong><br><br>Structure: 1 — m3 — P5 &nbsp;|&nbsp; intervals: 0, 3, 7<br><br>• Dark and melancholic sound<br>• Example: A minor = A-C-E<br>• Only the third changes (4→3 semitones vs major)';
   if (has('augmented sixth','italian sixth','french sixth','german sixth','it+6','fr+6','ger+6','it 6','fr 6','ger 6'))
-    return '🎼 <strong>Augmented Sixth Chords (It+6 / Fr+6 / Ger+6)</strong><br><br>Three chords built on <strong>♭6 in the bass</strong>, with an <strong>augmented 6th</strong> up to the raised 4th degree (♯4) — in C minor, Ab (bass) up to F♯. Both outer notes resolve <strong>outward</strong>, to the unison/octave on G (♭6 falls, ♯4 rises) — hence the name.<br><br><strong>Italian:</strong> Ab — C — F♯ (only 3 notes, the tonic is doubled)<br><strong>French:</strong> Ab — C — D — F♯ (adds the 2nd degree, which becomes a common tone with the following V)<br><strong>German:</strong> Ab — C — Eb — F♯ (adds the ♭3 — enharmonically a dominant 7th chord)<br><br><strong>⚠️ The classic trap:</strong> the German resolving straight to V produces <strong>parallel fifths</strong> (between the bass and the ♭3). The textbook fix: go through a <strong>cadential 6/4</strong> first (Ger+6 → I6/4 → V), which shares the same bass as V and avoids the problem.<br><br>All three carry an intensified <strong>Subdominant</strong> function — derived from iv, with ♭6 already present and the 4th degree altered up to ♯4. 🎯';
+    return '🎼 <strong>Augmented Sixth Chords (It+6 / Fr+6 / Ger+6)</strong><br><br>Three chords built on <strong>♭6 in the bass</strong>, with an <strong>augmented 6th</strong> up to the raised 4th degree (♯4) — in C minor, Ab (bass) up to F♯. Both outer notes resolve <strong>outward</strong>, to the unison/octave on G (♭6 falls, ♯4 rises) — hence the name.<br><br><strong>Italian:</strong> Ab — C — F♯ (only 3 notes, the tonic is doubled)<br><strong>French:</strong> Ab — C — D — F♯ (adds the 2nd degree, which becomes a common tone with the following V)<br><strong>German:</strong> Ab — C — Eb — F♯ (adds the ♭3 — enharmonically a dominant 7th chord)<br><br><strong>⚠️ The classic trap:</strong> the German resolving straight to V produces <strong>parallel fifths</strong> (between the bass and the ♭3). The textbook fix: go through a <strong>cadential 6/4</strong> first (Ger+6 → i6/4 → V), which shares the same bass as V and avoids the problem.<br><br>All three carry an intensified <strong>Subdominant</strong> function — derived from iv, with ♭6 already present and the 4th degree altered up to ♯4. 🎯';
 
   if (has('augmented') && !has('sixth','6th'))
     return '🎹 <strong>Augmented Chord</strong><br><br>Structure: 1 — M3 — A5 &nbsp;|&nbsp; intervals: 0, 4, 8<br><br>• Tense and unstable, symmetric<br>• Example: C+ = C-E-G♯<br>• Divides the octave into 3 equal major thirds';
