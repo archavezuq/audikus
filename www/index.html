@@ -627,6 +627,7 @@
         <div class="app-footer">
           <button class="btn" style="width:100%;margin-bottom:12px;background:var(--card);border:1px solid var(--border);font-size:0.85em;" onclick="restartTutorial()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;flex-shrink:0"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5c-3.5-.5-6.5 0-8.5 1.5z"></path><path d="M12 6.5v13"></path></svg> Ver tutorial</button>
           <button class="btn" style="width:100%;margin-bottom:16px;background:var(--card);border:1px solid var(--border);font-size:0.85em;" onclick="changeName()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;flex-shrink:0"><path d="M15 4.5l4.5 4.5L9 19.5H4.5V15z"></path><path d="M12.5 7l4.5 4.5"></path></svg> Cambiar nombre</button>
+          <p id="aboutFocusNote" style="font-size:0.82em;color:var(--text-muted);margin-bottom:10px;line-height:1.5;"></p>
           <p>Audikus — Oído Musical<br>Mtro. Andrés Chávez · Educación Musical<br><a href="mailto:andreschbflute@gmail.com" style="color:var(--text-muted);text-decoration:none;">andreschbflute@gmail.com</a> · © 2025</p>
         </div>
       </div>
@@ -963,6 +964,7 @@ const ui = {
       escalas:{title:'Escalas',sub:'Mayor, Menor y Modos'},
       notas:{title:'Nota Absoluta',sub:'Diatónico y Cromático'},
       alturas:{title:'Contorno Melódico',sub:'Dirección e intervalos de una secuencia'},
+      oidoAbsoluto:{title:'Oído Absoluto',sub:'Identifica la nota sin referencia'},
       entonacion:{title:'Entonación',sub:'Canta el intervalo'},
       entonAcordes:{title:'Entonación Acordes',sub:'Canta cada nota del acorde'},
       entonEscalas:{title:'Entonación Escalas',sub:'Canta la escala completa'}
@@ -1002,6 +1004,8 @@ const ui = {
     },
     notasNoRef:`${icon('bellOff')} Sin referencia — identifica la nota directamente`,
     funcIdentifyHint:`${icon('compass')} Identifica la función armónica del acorde`,
+    oaTimeUp:'¡Se acabó el tiempo!', oaOutOfRange:'Fuera de rango',
+    aboutFocusNote:'Audikus se enfoca exclusivamente en entrenamiento auditivo de sonido y tonalidad (intervalos, acordes, escalas, altura, oído absoluto) — no incluye entrenamiento rítmico.',
     noData:`${icon('note')} Aún no hay datos. Practica en <strong>Modo Prueba</strong> para ver tu progreso aquí.`,
     suggestions:`${icon('bulb')} Sugerencias`,
     suggInverse:(cat,a,b,n)=>`En <strong>${cat}</strong> confundes <strong>${a}</strong> con su inverso <strong>${b}</strong> (${n} veces). Son complementarios — practica en modo armónico para diferenciarlos.`,
@@ -1014,7 +1018,7 @@ const ui = {
     analysisRec:(cat)=>`${icon('target')} <strong>Recomendación:</strong> Dedica tu próxima sesión a <strong>${cat}</strong> — es el área con mayor margen de mejora.`,
     analysisConf:(cat,a,b,n)=>`${icon('next')} <strong>Confusión frecuente:</strong> En ${cat} confundes <strong>${a}</strong> con <strong>${b}</strong> (${n} veces).`,
     analysisBased:(n)=>`Basado en ${n} respuestas registradas.`,
-    cats:{intervalos:'Intervalos',triadas:'Tríadas',inversiones:'Inversiones',septimas:'Acordes con Séptima',progresiones:'Progresiones',escalas:'Escalas',notas:'Nota Absoluta',alturas:'Contorno Melódico',entonacion:'Entonación',entonAcordes:'Entonación Acordes',entonEscalas:'Entonación Escalas'},
+    cats:{intervalos:'Intervalos',triadas:'Tríadas',inversiones:'Inversiones',septimas:'Acordes con Séptima',progresiones:'Progresiones',escalas:'Escalas',notas:'Nota Absoluta',alturas:'Contorno Melódico',oidoAbsoluto:'Oído Absoluto',entonacion:'Entonación',entonAcordes:'Entonación Acordes',entonEscalas:'Entonación Escalas'},
     sAlturas:{
       octTitle:`${icon('piano')} Registro de referencia:`,
       ansHigh:'Agudo ↑', ansLow:'Grave ↓',
@@ -1031,6 +1035,31 @@ const ui = {
           ? `${icon('bell')} Escucharás una secuencia de ${n} notas. Identifica el intervalo y la dirección de cada salto: ${legend}.`
           : `${icon('bell')} Escucharás una secuencia de ${n} notas. Identifica la dirección de cada salto: ${legend}.`;
       }
+    },
+    sOidoAbsoluto:{
+      startTitle:`${icon('piano')} Nota de partida:`,
+      startLocked:(name)=>`Ya empezaste a entrenar desde <strong>${name}</strong> — cambiarla ahora reiniciaría tu progreso.`,
+      timeoutTitle:`${icon('bolt')} Tiempo para responder:`,
+      timeoutOn:'Activado (igual al estudio)', timeoutOff:'Desactivado',
+      manualTitle:`${icon('unlock')} Activar una nota manualmente:`,
+      statusTitle:`${icon('ear')} Tu progreso:`,
+      statusBody:(count,subLevel,pct)=>`Notas activas: <strong>${count}/12</strong><br>Nivel actual: <strong>${subLevel}/24</strong> (necesitas ${pct}% de precisión para avanzar)`,
+      graduatedBadge:'¡Entrenamiento de las 12 notas completado!',
+      replayIntro:'Ver la introducción de nuevo',
+      status:(count,next)=>`${icon('ear')} Notas activas: <strong>${count}/12</strong>${next?` · próxima: <strong>${next}</strong>`:''}`,
+      drillStatus:(name)=>`${icon('target')} Refuerzo dirigido — enfocado en <strong>${name}</strong>`,
+      unlockTitle:'¡Nueva nota desbloqueada!',
+      unlockBody:(name,count)=>`Agregaste <strong>${name}</strong>. Ahora entrenas <strong>${count}</strong> nota${count===1?'':'s'} a la vez.`,
+      unlockBtn:'¡A entrenar!',
+      gradTitle:'Entrenamiento completado',
+      gradBody:'Completaste el entrenamiento de las 12 notas: superaste el nivel final varias veces, incluso después de descansar — tu reconocimiento es consistente, no solo suerte.',
+      gradBtn:'Genial',
+      drillTitle:'Refuerzo dirigido',
+      drillBody:(name)=>`<strong>${name}</strong> es la nota donde más te cuesta ahora. Este bloque corto se enfoca solo en ella y sus vecinas — las primeras rondas con retroalimentación, las últimas sin ella.`,
+      drillBtn:'Empezar',
+      introTitle:'Antes de empezar',
+      introBody:'Este módulo entrena tu capacidad de reconocer notas sin referencia externa, siguiendo un protocolo de entrenamiento progresivo documentado en investigación reciente (Wong et al., 2025).<br><br>Es importante que sepas: la ciencia sobre si el oído absoluto se puede adquirir en la adultez sigue siendo objeto de debate. El estudio en el que se basa este módulo mostró resultados distintos entre personas — algunas avanzaron mucho, otras menos — y no hay garantía de un resultado específico. Lo que sí está comprobado es que practicar con este método mejora la precisión al identificar notas, incluso si no se llega a una identificación perfecta. Tómalo como una vía más de entrenamiento auditivo, no como una promesa.',
+      introBtn:'Entendido, empezar'
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Tu rango vocal:`,
@@ -1093,6 +1122,7 @@ const ui = {
       escalas:{title:'Scales',sub:'Major, Minor and Modes'},
       notas:{title:'Absolute Pitch',sub:'Diatonic and Chromatic'},
       alturas:{title:'Melodic Contour',sub:'Direction and intervals of a sequence'},
+      oidoAbsoluto:{title:'Perfect Pitch',sub:'Identify the note with no reference'},
       entonacion:{title:'Intonation',sub:'Sing the interval'},
       entonAcordes:{title:'Chord Intonation',sub:'Sing each note of the chord'},
       entonEscalas:{title:'Scale Intonation',sub:'Sing the full scale'}
@@ -1132,6 +1162,8 @@ const ui = {
     },
     notasNoRef:`${icon('bellOff')} No reference — identify the note directly`,
     funcIdentifyHint:`${icon('compass')} Identify the chord's harmonic function`,
+    oaTimeUp:'Time\'s up!', oaOutOfRange:'Out of range',
+    aboutFocusNote:'Audikus focuses exclusively on sound and tonal ear training (intervals, chords, scales, pitch, absolute pitch) — it does not include rhythm training.',
     noData:`${icon('note')} No data yet. Practice in <strong>Practice Mode</strong> to see your progress here.`,
     suggestions:`${icon('bulb')} Suggestions`,
     suggInverse:(cat,a,b,n)=>`In <strong>${cat}</strong> you confuse <strong>${a}</strong> with its inverse <strong>${b}</strong> (${n} times). They are complementary — practice in harmonic mode to distinguish them.`,
@@ -1144,7 +1176,7 @@ const ui = {
     analysisRec:(cat)=>`${icon('target')} <strong>Recommendation:</strong> Dedicate your next session to <strong>${cat}</strong> — it's the area with the most room for improvement.`,
     analysisConf:(cat,a,b,n)=>`${icon('next')} <strong>Frequent confusion:</strong> In ${cat} you confuse <strong>${a}</strong> with <strong>${b}</strong> (${n} times).`,
     analysisBased:(n)=>`Based on ${n} recorded answers.`,
-    cats:{intervalos:'Intervals',triadas:'Triads',inversiones:'Inversions',septimas:'Seventh Chords',progresiones:'Progressions',escalas:'Scales',notas:'Absolute Pitch',alturas:'Melodic Contour',entonacion:'Intonation',entonAcordes:'Chord Intonation',entonEscalas:'Scale Intonation'},
+    cats:{intervalos:'Intervals',triadas:'Triads',inversiones:'Inversions',septimas:'Seventh Chords',progresiones:'Progressions',escalas:'Scales',notas:'Absolute Pitch',alturas:'Melodic Contour',oidoAbsoluto:'Perfect Pitch',entonacion:'Intonation',entonAcordes:'Chord Intonation',entonEscalas:'Scale Intonation'},
     sAlturas:{
       octTitle:`${icon('piano')} Reference register:`,
       ansHigh:'High ↑', ansLow:'Low ↓',
@@ -1161,6 +1193,31 @@ const ui = {
           ? `${icon('bell')} You will hear a sequence of ${n} notes. Identify the interval and direction of each leap: ${legend}.`
           : `${icon('bell')} You will hear a sequence of ${n} notes. Identify the direction of each leap: ${legend}.`;
       }
+    },
+    sOidoAbsoluto:{
+      startTitle:`${icon('piano')} Starting note:`,
+      startLocked:(name)=>`You already started training from <strong>${name}</strong> — changing it now would reset your progress.`,
+      timeoutTitle:`${icon('bolt')} Response time:`,
+      timeoutOn:'On (same as the study)', timeoutOff:'Off',
+      manualTitle:`${icon('unlock')} Manually activate a note:`,
+      statusTitle:`${icon('ear')} Your progress:`,
+      statusBody:(count,subLevel,pct)=>`Active notes: <strong>${count}/12</strong><br>Current level: <strong>${subLevel}/24</strong> (you need ${pct}% accuracy to advance)`,
+      graduatedBadge:'12-note training completed!',
+      replayIntro:'Watch the intro again',
+      status:(count,next)=>`${icon('ear')} Active notes: <strong>${count}/12</strong>${next?` · next: <strong>${next}</strong>`:''}`,
+      drillStatus:(name)=>`${icon('target')} Targeted drill — focused on <strong>${name}</strong>`,
+      unlockTitle:'New note unlocked!',
+      unlockBody:(name,count)=>`You added <strong>${name}</strong>. You're now training <strong>${count}</strong> note${count===1?'':'s'} at once.`,
+      unlockBtn:'Let\'s train!',
+      gradTitle:'Training completed',
+      gradBody:'You completed the 12-note training: you passed the final level several times, even after resting — your recognition is consistent, not just luck.',
+      gradBtn:'Great',
+      drillTitle:'Targeted drill',
+      drillBody:(name)=>`<strong>${name}</strong> is the note you currently struggle with the most. This short block focuses only on it and its neighbors — the first rounds with feedback, the last ones without.`,
+      drillBtn:'Start',
+      introTitle:'Before you start',
+      introBody:'This module trains your ability to recognize notes with no external reference, following a progressive training protocol documented in recent research (Wong et al., 2025).<br><br>Important to know: the science on whether absolute pitch can be acquired in adulthood is still debated. The study this module is based on showed very different results between people — some improved a lot, others less — and there\'s no guarantee of a specific outcome. What is established is that practicing with this method improves note-identification accuracy, even without reaching perfect identification. Think of it as one more path of ear training, not a promise.',
+      introBtn:'Got it, start'
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Your vocal range:`,
@@ -1194,6 +1251,7 @@ function tx(key) { return (ui[currentLang]||ui.es)[key] || ui.es[key] || key; }
 
 const termEN = {
   'Unísono (P1)':'Unison (P1)',
+  'Fuera de rango':'Out of range',
   'Segunda menor (m2)':'Minor Second (m2)','Segunda mayor (M2)':'Major Second (M2)',
   'Tercera menor (m3)':'Minor Third (m3)','Tercera mayor (M3)':'Major Third (M3)',
   'Cuarta justa (P4)':'Perfect Fourth (P4)','Tritono (TT)':'Tritone (TT)',
@@ -1620,6 +1678,11 @@ const customSettings = {
     noteCounts: [2,3,4], // cantidad de notas activas por pregunta (mín. 1 activa)
     selectedIntervals: ALTURAS_INTERVALS.map(i => i.name) // usado solo si subMode === 'intervals'; incluye Unísono = "misma nota"
   },
+  oidoAbsoluto: {
+    startNote: 'Fa',    // nota de partida del orden de desbloqueo (configurable)
+    timeoutEnabled: true,
+    manualNotes: []     // notas activadas a mano, fuera del orden automático
+  },
   entonacion:  {
     voiceRange: 0, voiceRangeMidi: 60,
     selectedIntervals: musicData.intervalos.map(i => i.name),
@@ -1803,6 +1866,7 @@ async function initAudio() {
   audioReady = true;
   loadProgress();
   loadFuncState();
+  loadOaState();
   document.getElementById('startOverlay').style.display = 'none';
   document.getElementById('tutorialOverlay').style.display = 'none';
   updateStaticText();
@@ -1887,6 +1951,8 @@ function updateStaticText() {
   // Settings screen title
   const ssEl = document.getElementById('settingsScreenTitle');
   if (ssEl) ssEl.textContent = L.settingsScreen;
+  const afnEl = document.getElementById('aboutFocusNote');
+  if (afnEl) afnEl.textContent = L.aboutFocusNote;
   // Segmented buttons (study/test)
   const sgS = document.getElementById('segStudy'); if (sgS) sgS.textContent = L.segStudy;
   const sgT = document.getElementById('segTest');  if (sgT) sgT.textContent = L.segTest;
@@ -1922,7 +1988,7 @@ function switchNavTab(tab) {
   if (tab === 'progress' && audioReady) renderProgressPanel();
 }
 
-const TEST_ONLY_MODES = ['entonacion', 'alturas', 'entonAcordes', 'entonEscalas', 'notas'];
+const TEST_ONLY_MODES = ['entonacion', 'alturas', 'entonAcordes', 'entonEscalas', 'notas', 'oidoAbsoluto'];
 function openExerciseOverlay() {
   document.getElementById('exerciseOverlay').classList.add('open');
   const seg = document.querySelector('.seg-control');
@@ -1945,6 +2011,7 @@ function stopAllSound() {
   studyTimers.forEach(t => Tone.Transport.clear(t));
   studyTimers = [];
   if (nextQTimer) { clearTimeout(nextQTimer); nextQTimer = null; }
+  clearOaTimeout();
   try { synth.releaseAll(); } catch(e) {}
 }
 
@@ -1974,10 +2041,10 @@ function renderModeCards() {
     intervalos:'img/intervalos.png', triadas:'img/triadas.png',
     inversiones:'img/inversiones.png', septimas:'img/septimas.png',
     progresiones:'img/progresiones.png', escalas:'img/escalas.png',
-    notas:'img/nota_absoluta.png', alturas:'', entonacion:'',
+    notas:'img/nota_absoluta.png', alturas:'', entonacion:'', oidoAbsoluto:'',
     entonAcordes:'img/entonacion-acordes.svg', entonEscalas:'img/entonacion-escalas.svg'
   };
-  const modes = ['intervalos','triadas','inversiones','septimas','progresiones','escalas','notas','alturas','entonacion','entonAcordes','entonEscalas'];
+  const modes = ['intervalos','triadas','inversiones','septimas','progresiones','escalas','notas','alturas','oidoAbsoluto','entonacion','entonAcordes','entonEscalas'];
   const learnCards = document.getElementById('learnCards');
   if (!learnCards) return;
   learnCards.innerHTML = modes.map(m => {
@@ -1985,6 +2052,7 @@ function renderModeCards() {
     const img  = CARD_IMGS[m];
     const modeIcon = img
       ? `<div class="mode-icon"><img src="${img}" alt="${data.title}" onerror="this.style.display='none'" style="width:40px;height:40px;"></div>`
+      : m === 'oidoAbsoluto' ? `<div class="mode-icon" style="margin-bottom:8px;">${icon('ear',32)}</div>`
       : `<div class="mode-icon" style="margin-bottom:8px;">${m==='alturas'?icon('updown',32):'<img src="img/entonacion.svg" style="width:40px;height:40px;">'}</div>`;
     const active = m === currentMode ? ' active' : '';
     return `<div class="mode-card${active}" data-mode="${m}" onclick="selectModeCard('${m}')">
@@ -2034,6 +2102,7 @@ function updateView() {
   } else {
     if (t) t.style.display = 'block';
     updateSettingsPanel();
+    if (currentMode === 'oidoAbsoluto' && !localStorage.getItem('audikus_oido_absoluto_intro_visto')) showOaIntroModal();
     nextQuestion(false);
   }
 }
@@ -2341,6 +2410,39 @@ function updateSettingsPanel() {
           ${ALTURAS_INTERVALS.map(x => `<button class="toggle-btn ${as.selectedIntervals.includes(x.name)?'active':''}" onclick="toggleAlturaInterval('${x.name}')">${dn(x.name).replace(' (','\n(')}</button>`).join('')}
         </div>
       </div>` : ''}`;
+  } else if (currentMode === 'oidoAbsoluto') {
+    const L = ui[currentLang].sOidoAbsoluto;
+    const as = customSettings.oidoAbsoluto;
+    const locked = oaState.activeNotes.length > 1;
+    const allNotes = musicData.notas.map(n => n.name);
+    panel.innerHTML = `
+      <div class="settings-section">
+        <h4>${L.startTitle}</h4>
+        ${locked
+          ? `<p style="font-size:0.85em;color:var(--text-muted);">${L.startLocked(dn(as.startNote))}</p>`
+          : `<div class="toggle-group">${allNotes.map(n => `<button class="toggle-btn ${as.startNote===n?'active':''}" onclick="setOaStartNote('${n}')">${dn(n)}</button>`).join('')}</div>`}
+      </div>
+      <div class="settings-section">
+        <h4>${L.timeoutTitle}</h4>
+        <div class="toggle-group">
+          <button class="toggle-btn ${as.timeoutEnabled?'active':''}" onclick="setOaTimeoutPref(true)">${L.timeoutOn}</button>
+          <button class="toggle-btn ${!as.timeoutEnabled?'active':''}" onclick="setOaTimeoutPref(false)">${L.timeoutOff}</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>${L.manualTitle}</h4>
+        <div class="toggle-group">
+          ${allNotes.map(n => `<button class="toggle-btn ${oaState.activeNotes.includes(n)?'active':''}" ${oaState.activeNotes.includes(n)?'disabled':''} onclick="toggleOaManualNote('${n}')">${dn(n)}</button>`).join('')}
+        </div>
+      </div>
+      <div class="settings-section">
+        <h4>${L.statusTitle}</h4>
+        <p style="font-size:0.88em;color:var(--text-muted);line-height:1.6;">${L.statusBody(oaState.activeNotes.length, oaState.subLevel, Math.round(oaRequiredAccuracy(oaState.subLevel)))}</p>
+        ${oaState.graduated ? `<p style="font-size:0.88em;color:#f5b54a;font-weight:700;margin-top:8px;">${icon('trophy',14,'#f5b54a')} ${L.graduatedBadge}</p>` : ''}
+      </div>
+      <div class="settings-section">
+        <button class="btn" style="width:100%;background:var(--card-hover);border:1px solid var(--border);font-size:0.85em;" onclick="showOaIntroModal()">${icon('book')} ${L.replayIntro}</button>
+      </div>`;
   } else if (currentMode === 'entonacion') {
     const se = ui[currentLang].sEntonacion;
     const ec = customSettings.entonacion;
@@ -2779,6 +2881,9 @@ async function playSound() {
     const freqs = [getFreq(0, oct)];
     currentQuestion.steps.forEach(s => { cum += s.dir === 'up' ? s.semis : s.dir === 'down' ? -s.semis : 0; freqs.push(getFreq(cum, oct)); });
     freqs.forEach((f, i) => t(i * gap, f, i === freqs.length - 1 ? '0.7' : '0.5'));
+  } else if (currentMode === 'oidoAbsoluto') {
+    t(0, getFreq(currentQuestion.semitones, currentQuestion.register), '0.8');
+    if (customSettings.oidoAbsoluto.timeoutEnabled && !oaState.drill) startOaTimeout();
   } else if (currentMode === 'entonacion') {
     t(0, midiFreq(currentQuestion.refMidi), '0.8');
   } else if (currentMode === 'entonAcordes' || currentMode === 'entonEscalas') {
@@ -2883,6 +2988,286 @@ function showFuncUnlockModal(name) {
     </div>`;
   document.body.appendChild(modal);
   modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+// ==================== OÍDO ABSOLUTO ====================
+// Protocolo adaptado de Wong, Cheung, Ngan & Wong (2025, Psychonomic Bulletin & Review):
+// 24 sub-niveles por cada nota agregada (288 niveles totales con las 12 notas; umbral de
+// precisión 20%→90%), orden de desbloqueo alternando el borde cromático más cercano desde
+// una nota de partida configurable, ventana de respuesta que se ALARGA con más notas activas
+// (1183ms con 1 nota → 2028ms con las 12, igual que el estudio), y graduación anti-suerte
+// (3 aciertos consecutivos del nivel final + 1 más tras ≥12h sin entrenar).
+
+// Calcula el orden de desbloqueo alternando el vecino cromático más cercano (abajo/arriba)
+// desde la nota de partida — no es una lista fija, se recalcula si cambia la nota de partida.
+function computeOaOrder(startName) {
+  const names = musicData.notas.map(n => n.name); // índice = semitono (Do=0 ... Si=11)
+  const startIdx = names.indexOf(startName);
+  if (startIdx === -1) return names;
+  const order = [startIdx];
+  let lo = startIdx, hi = startIdx, goLow = true;
+  while (order.length < 12) {
+    if (goLow && lo > 0) { lo--; order.push(lo); }
+    else if (!goLow && hi < 11) { hi++; order.push(hi); }
+    else if (lo > 0) { lo--; order.push(lo); }
+    else if (hi < 11) { hi++; order.push(hi); }
+    goLow = !goLow;
+  }
+  return order.map(i => names[i]);
+}
+// 20% en el nivel 1 → 90% en el nivel 24, lineal (igual al estudio)
+function oaRequiredAccuracy(subLevel) { return 20 + (subLevel - 1) * (70 / 23); }
+const OA_FEEDBACK_UNTIL_LEVEL = 12; // la retroalimentación visual se retira en la 2ª mitad de cada nota
+const OA_WINDOW = 15; // tamaño de la ventana de evaluación, igual al resto de la app (90%/15 en Función Armónica)
+
+let oaState = {
+  activeNotes: [customSettings.oidoAbsoluto.startNote],
+  subLevel: 1,
+  attempts: [],        // {correct, levelKey} — ventana reciente aislada por (notas activas + sub-nivel)
+  finalPasses: 0,      // 0-3: veces consecutivas que superó el nivel 24 con las 12 notas activas
+  thirdPassAt: null,   // timestamp del 3er pase, para el gate de 12h antes del 4to (graduación)
+  graduated: false,
+  graduatedAt: null,
+  weakDrillCounter: 0, // cuenta hasta 15 intentos para disparar el refuerzo dirigido
+  drill: null          // { target, trialIndex, feedbackTrials, totalTrials } mientras hay un refuerzo activo
+};
+function loadOaState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('audikus_oido_absoluto') || 'null');
+    if (saved && Array.isArray(saved.activeNotes) && saved.activeNotes.length) {
+      oaState = {
+        activeNotes: saved.activeNotes.filter(n => musicData.notas.some(x => x.name === n)),
+        subLevel: Math.min(Math.max(saved.subLevel || 1, 1), 24),
+        attempts: Array.isArray(saved.attempts) ? saved.attempts.slice(-300) : [],
+        finalPasses: saved.finalPasses || 0,
+        thirdPassAt: saved.thirdPassAt || null,
+        graduated: !!saved.graduated,
+        graduatedAt: saved.graduatedAt || null,
+        weakDrillCounter: saved.weakDrillCounter || 0,
+        drill: saved.drill || null
+      };
+    }
+  } catch(e) {}
+  if (!oaState.activeNotes.length) oaState.activeNotes = [customSettings.oidoAbsoluto.startNote];
+}
+function saveOaState() {
+  try { localStorage.setItem('audikus_oido_absoluto', JSON.stringify(oaState)); } catch(e) {}
+}
+function oaLevelKey() { return oaState.activeNotes.slice().sort().join(',') + '|' + oaState.subLevel; }
+function oaNextToUnlock() {
+  const order = computeOaOrder(customSettings.oidoAbsoluto.startNote);
+  return order.find(n => !oaState.activeNotes.includes(n)) || null;
+}
+// Distractores "fuera de rango": hasta 2 semitonos por fuera de cada borde del conjunto activo,
+// solo mientras quede espacio cromático libre; desaparecen por completo con las 12 notas activas.
+function oaOutOfRangeNotes() {
+  if (oaState.activeNotes.length >= 12) return [];
+  const names = musicData.notas.map(n => n.name);
+  const idxs = oaState.activeNotes.map(n => names.indexOf(n));
+  const lo = Math.min(...idxs), hi = Math.max(...idxs);
+  const out = [];
+  if (lo - 1 >= 0) out.push(names[lo - 1]);
+  if (lo - 2 >= 0) out.push(names[lo - 2]);
+  if (hi + 1 <= 11) out.push(names[hi + 1]);
+  if (hi + 2 <= 11) out.push(names[hi + 2]);
+  return out;
+}
+// Ventana de respuesta: se ALARGA con más notas activas (igual que el estudio real:
+// 1183ms con 1 nota → 2028ms con las 12), interpolado linealmente.
+function oaTimeoutMs() {
+  const n = oaState.activeNotes.length;
+  return Math.round(1183 + (n - 1) * (2028 - 1183) / 11);
+}
+function oaShowsFeedback() {
+  if (oaState.drill) return oaState.drill.trialIndex < oaState.drill.feedbackTrials;
+  return oaState.subLevel <= OA_FEEDBACK_UNTIL_LEVEL;
+}
+
+function recordOaAttempt(isCorrect, correctName, selectedName) {
+  recordAnswer('oidoAbsoluto', correctName, selectedName, isCorrect);
+  if (oaState.drill) { saveOaState(); return; } // el refuerzo dirigido no mueve nivel ni el contador de 15
+  oaState.attempts.push({ correct: isCorrect, levelKey: oaLevelKey() });
+  if (oaState.attempts.length > 300) oaState.attempts = oaState.attempts.slice(-300);
+  oaState.weakDrillCounter++;
+  checkOaLevelAdvance();
+  if (oaState.weakDrillCounter >= 15) {
+    oaState.weakDrillCounter = 0;
+    saveOaState();
+    startOaWeakNoteDrill();
+    return;
+  }
+  saveOaState();
+}
+function checkOaLevelAdvance() {
+  const isFinalStage = oaState.activeNotes.length === 12 && oaState.subLevel === 24;
+  const key = oaLevelKey();
+  const recent = oaState.attempts.filter(a => a.levelKey === key);
+  if (recent.length < OA_WINDOW) return;
+  const win = recent.slice(-OA_WINDOW);
+  const acc = win.filter(a => a.correct).length / OA_WINDOW;
+  const required = (isFinalStage ? 90 : oaRequiredAccuracy(oaState.subLevel)) / 100;
+  if (acc < required) return;
+  // Ventana superada: se consume (no cuenta dos veces) — así cada pase del nivel final es
+  // "consecutivo" por construcción, porque la siguiente ventana solo junta intentos nuevos.
+  oaState.attempts = oaState.attempts.filter(a => a.levelKey !== key);
+  if (isFinalStage) { handleOaFinalPass(); return; }
+  if (oaState.subLevel < 24) {
+    oaState.subLevel++;
+  } else {
+    const next = oaNextToUnlock();
+    if (next) { oaState.activeNotes.push(next); oaState.subLevel = 1; showOaUnlockModal(next); }
+  }
+}
+function handleOaFinalPass() {
+  const now = Date.now();
+  if (oaState.finalPasses < 3) {
+    oaState.finalPasses++;
+    if (oaState.finalPasses === 3) oaState.thirdPassAt = now;
+    return;
+  }
+  const TWELVE_H = 12 * 60 * 60 * 1000;
+  if (oaState.thirdPassAt && (now - oaState.thirdPassAt) >= TWELVE_H) {
+    oaState.graduated = true;
+    oaState.graduatedAt = now;
+    showOaGraduationModal();
+  }
+  // Si aún no pasaron las 12h sin entrenar, no se otorga ni se resetea — sigue intentando después.
+}
+
+// Refuerzo dirigido: cada 15 intentos normales, un bloque corto (12 con feedback + 22 sin)
+// enfocado solo en la nota con peor precisión del usuario, frente a sus vecinas cromáticas.
+function startOaWeakNoteDrill() {
+  const prog = progress.oidoAbsoluto || {};
+  const candidates = oaState.activeNotes.filter(n => prog[n] && prog[n].total >= 5);
+  if (!candidates.length) return;
+  const weakest = candidates.reduce((worst, n) => {
+    const acc = prog[n].correct / prog[n].total, worstAcc = prog[worst].correct / prog[worst].total;
+    return acc < worstAcc ? n : worst;
+  }, candidates[0]);
+  oaState.drill = { target: weakest, trialIndex: 0, feedbackTrials: 12, totalTrials: 34 };
+  saveOaState();
+  showOaDrillIntro(weakest);
+}
+function advanceOaDrill() {
+  if (!oaState.drill) return;
+  oaState.drill.trialIndex++;
+  if (oaState.drill.trialIndex >= oaState.drill.totalTrials) oaState.drill = null;
+  saveOaState();
+}
+function oaDrillNeighborPool() {
+  const names = musicData.notas.map(n => n.name);
+  const idx = names.indexOf(oaState.drill.target);
+  const pool = new Set([oaState.drill.target]);
+  [idx - 2, idx - 1, idx + 1, idx + 2].forEach(i => { if (i >= 0 && i <= 11) pool.add(names[i]); });
+  return Array.from(pool);
+}
+
+// Ventana de tiempo visible (barra) — temporizador de UI, no de audio; se cancela al responder.
+let oaTimeoutTimer = null;
+function startOaTimeout() {
+  clearOaTimeout();
+  const ms = oaTimeoutMs();
+  const bar = document.getElementById('oaTimeoutBar');
+  if (bar) {
+    bar.style.transition = 'none'; bar.style.width = '100%';
+    requestAnimationFrame(() => { bar.style.transition = `width ${ms}ms linear`; bar.style.width = '0%'; });
+  }
+  oaTimeoutTimer = setTimeout(() => { if (!answered) oaHandleTimeout(); }, ms);
+}
+function clearOaTimeout() {
+  if (oaTimeoutTimer) { clearTimeout(oaTimeoutTimer); oaTimeoutTimer = null; }
+  const bar = document.getElementById('oaTimeoutBar');
+  if (bar) { bar.style.transition = 'none'; bar.style.width = '0%'; }
+}
+function oaHandleTimeout() {
+  if (answered || currentMode !== 'oidoAbsoluto') return;
+  answered = true;
+  clearOaTimeout();
+  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+  const fb = document.getElementById('feedback');
+  scores.incorrect++; scores.streak = 0;
+  if (oaShowsFeedback()) { fb.textContent = tx('oaTimeUp'); fb.className = 'feedback incorrect'; }
+  else { fb.textContent = ''; fb.className = 'feedback'; }
+  recordOaAttempt(false, currentQuestion.name, '(sin respuesta)');
+  if (oaState.drill) advanceOaDrill();
+  updateScoreboard();
+  nextQTimer = setTimeout(() => { nextQTimer = null; nextQuestion(); }, 1800);
+}
+
+function showOaUnlockModal(name) {
+  fireConfetti();
+  const existing = document.getElementById('oaUnlockModal'); if (existing) existing.remove();
+  const L = ui[currentLang].sOidoAbsoluto;
+  const modal = document.createElement('div');
+  modal.id = 'oaUnlockModal'; modal.className = 'milestone-modal-bg';
+  modal.innerHTML = `
+    <div class="milestone-modal">
+      <div style="width:72px;height:72px;margin:0 auto 14px;border-radius:50%;border:2.5px solid var(--primary);background:rgba(108,99,255,0.18);display:grid;place-items:center;">${icon('unlock',32,'var(--primary)')}</div>
+      <div style="font-size:13px;color:var(--primary);font-weight:800;letter-spacing:.04em;margin-bottom:4px;">${L.unlockTitle}</div>
+      <div style="font-size:15px;line-height:1.5;margin-bottom:20px;">${L.unlockBody(dn(name), oaState.activeNotes.length)}</div>
+      <button onclick="document.getElementById('oaUnlockModal').remove()" style="background:var(--primary);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">${L.unlockBtn}</button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+function showOaGraduationModal() {
+  fireConfetti();
+  const existing = document.getElementById('oaGradModal'); if (existing) existing.remove();
+  const L = ui[currentLang].sOidoAbsoluto;
+  const modal = document.createElement('div');
+  modal.id = 'oaGradModal'; modal.className = 'milestone-modal-bg';
+  modal.innerHTML = `
+    <div class="milestone-modal">
+      <div style="width:72px;height:72px;margin:0 auto 14px;border-radius:50%;border:2.5px solid #f5b54a;background:rgba(245,181,74,0.18);display:grid;place-items:center;">${icon('trophy',32,'#f5b54a')}</div>
+      <div style="font-size:13px;color:#f5b54a;font-weight:800;letter-spacing:.04em;margin-bottom:4px;">${L.gradTitle}</div>
+      <div style="font-size:15px;line-height:1.5;margin-bottom:20px;">${L.gradBody}</div>
+      <button onclick="document.getElementById('oaGradModal').remove()" style="background:#f5b54a;color:#1a1200;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">${L.gradBtn}</button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+function showOaDrillIntro(name) {
+  const existing = document.getElementById('oaDrillModal'); if (existing) existing.remove();
+  const L = ui[currentLang].sOidoAbsoluto;
+  const modal = document.createElement('div');
+  modal.id = 'oaDrillModal'; modal.className = 'milestone-modal-bg';
+  modal.innerHTML = `
+    <div class="milestone-modal">
+      <div style="width:72px;height:72px;margin:0 auto 14px;border-radius:50%;border:2.5px solid var(--warning);background:rgba(251,191,36,0.18);display:grid;place-items:center;">${icon('target',32,'var(--warning)')}</div>
+      <div style="font-size:13px;color:var(--warning);font-weight:800;letter-spacing:.04em;margin-bottom:4px;">${L.drillTitle}</div>
+      <div style="font-size:15px;line-height:1.5;margin-bottom:20px;">${L.drillBody(dn(name))}</div>
+      <button onclick="document.getElementById('oaDrillModal').remove();nextQuestion();" style="background:var(--warning);color:#1a1200;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">${L.drillBtn}</button>
+    </div>`;
+  document.body.appendChild(modal);
+}
+function showOaIntroModal() {
+  const existing = document.getElementById('oaIntroModal'); if (existing) existing.remove();
+  const L = ui[currentLang].sOidoAbsoluto;
+  const modal = document.createElement('div');
+  modal.id = 'oaIntroModal'; modal.className = 'milestone-modal-bg';
+  modal.innerHTML = `
+    <div class="milestone-modal" style="text-align:left;max-height:80vh;overflow-y:auto;">
+      <div style="text-align:center;margin-bottom:10px;">${icon('ear',40,'var(--primary)')}</div>
+      <div style="font-size:16px;font-weight:800;text-align:center;margin-bottom:14px;color:var(--primary);">${L.introTitle}</div>
+      <div style="font-size:13.5px;line-height:1.65;color:var(--text);margin-bottom:20px;">${L.introBody}</div>
+      <button onclick="closeOaIntroModal()" style="background:var(--primary);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">${L.introBtn}</button>
+    </div>`;
+  document.body.appendChild(modal);
+}
+function closeOaIntroModal() {
+  const m = document.getElementById('oaIntroModal'); if (m) m.remove();
+  try { localStorage.setItem('audikus_oido_absoluto_intro_visto', '1'); } catch(e) {}
+}
+function setOaStartNote(name) { customSettings.oidoAbsoluto.startNote = name; updateSettingsPanel(); }
+function setOaTimeoutPref(val) { customSettings.oidoAbsoluto.timeoutEnabled = val; updateSettingsPanel(); }
+function toggleOaManualNote(name) {
+  if (oaState.activeNotes.includes(name)) return;
+  oaState.activeNotes.push(name);
+  oaState.subLevel = 1; // el conjunto cambió: empieza el nivel 1 con las notas nuevas, igual que un desbloqueo automático
+  oaState.attempts = [];
+  if (!customSettings.oidoAbsoluto.manualNotes.includes(name)) customSettings.oidoAbsoluto.manualNotes.push(name);
+  saveOaState();
+  updateSettingsPanel();
 }
 
 // ==================== PREGUNTAS ====================
@@ -2995,6 +3380,29 @@ function nextQuestion(autoPlay = true) {
     options = shuffled.map(l => ({ name: l }));
     correctIndex = shuffled.indexOf(correctLabel);
     currentQuestion = { steps, octave: as.octave, noteCount };
+  } else if (currentMode === 'oidoAbsoluto') {
+    const register = [4, 5, 6][Math.floor(Math.random() * 3)];
+    if (oaState.drill) {
+      const pool = oaDrillNeighborPool();
+      const name = pool[Math.floor(Math.random() * pool.length)];
+      options = pool.map(n => ({ name: n }));
+      correctIndex = pool.indexOf(name);
+      currentQuestion = { name, semitones: musicData.notas.find(x => x.name === name).semitones, register };
+    } else {
+      const outOfRange = oaOutOfRangeNotes();
+      const useOutOfRange = outOfRange.length > 0 && Math.random() < 0.2;
+      const name = useOutOfRange
+        ? outOfRange[Math.floor(Math.random() * outOfRange.length)]
+        : oaState.activeNotes[Math.floor(Math.random() * oaState.activeNotes.length)];
+      options = oaState.activeNotes.map(n => ({ name: n }));
+      if (outOfRange.length) options.push({ name: 'Fuera de rango' });
+      correctIndex = useOutOfRange ? options.length - 1 : options.findIndex(o => o.name === name);
+      currentQuestion = {
+        name: useOutOfRange ? 'Fuera de rango' : name,
+        semitones: musicData.notas.find(x => x.name === name).semitones,
+        register
+      };
+    }
   } else if (currentMode === 'entonacion') {
     const se = customSettings.entonacion;
     const pool = musicData.intervalos.filter(x => se.selectedIntervals.includes(x.name));
@@ -3125,6 +3533,18 @@ function renderOptions(options, correctIndex) {
     refEl.style.cssText = 'text-align:center;margin:0 0 16px;font-size:0.92em;color:var(--text-muted);';
     refEl.innerHTML = tx('funcIdentifyHint');
     c.appendChild(refEl);
+  } else if (currentMode === 'oidoAbsoluto') {
+    const L = ui[currentLang].sOidoAbsoluto;
+    const statusEl = document.createElement('p');
+    statusEl.style.cssText = 'text-align:center;margin:0 0 10px;font-size:0.9em;color:var(--text-muted);';
+    statusEl.innerHTML = oaState.drill ? L.drillStatus(dn(oaState.drill.target)) : L.status(oaState.activeNotes.length, oaNextToUnlock() ? dn(oaNextToUnlock()) : null);
+    c.appendChild(statusEl);
+    if (customSettings.oidoAbsoluto.timeoutEnabled && !oaState.drill) {
+      const track = document.createElement('div');
+      track.style.cssText = 'height:4px;background:var(--border);border-radius:2px;margin-bottom:16px;overflow:hidden;';
+      track.innerHTML = '<div id="oaTimeoutBar" style="height:100%;background:var(--primary);width:100%;"></div>';
+      c.appendChild(track);
+    }
   }
   options.forEach((opt, i) => {
     const btn = document.createElement('button');
@@ -3135,6 +3555,8 @@ function renderOptions(options, correctIndex) {
     btn.setAttribute('data-internal', opt.name);
     if (currentMode === 'alturas') {
       btn.innerHTML = dn(opt.name).replace(/↑/g, icon('up')).replace(/↓/g, icon('down')).replace(/→/g, icon('right'));
+    } else if (currentMode === 'oidoAbsoluto' && opt.name === 'Fuera de rango') {
+      btn.innerHTML = icon('compass') + ' ' + dn(opt.name);
     } else {
       btn.textContent = dn(opt.name);
     }
@@ -3147,39 +3569,51 @@ function renderOptions(options, correctIndex) {
 function checkAnswer(selected, correct, btn) {
   if (answered) return;
   answered = true;
+  if (currentMode === 'oidoAbsoluto') clearOaTimeout();
   const btns = document.querySelectorAll('.option-btn');
   btns.forEach(b => b.disabled = true);
   const fb = document.getElementById('feedback');
   const correctName  = btns[correct].getAttribute('data-internal') || btns[correct].textContent.trim();
   const selectedName = btn.getAttribute('data-internal') || btn.textContent.trim();
+  // En Oído Absoluto la retroalimentación se retira en los niveles avanzados (parte del protocolo);
+  // el registro de progreso sigue igual, solo se oculta lo que ve el usuario.
+  const showFb = currentMode !== 'oidoAbsoluto' || oaShowsFeedback();
   if (selected === correct) {
-    btn.classList.add('correct');
-    fb.textContent = tx('feedbackCorrect'); fb.className = 'feedback correct';
+    if (showFb) { btn.classList.add('correct'); fb.textContent = tx('feedbackCorrect'); fb.className = 'feedback correct'; }
+    else { fb.textContent = ''; fb.className = 'feedback'; }
     scores.correct++; scores.streak++;
-    recordAnswer(currentMode, correctName, correctName, true);
+    if (currentMode !== 'oidoAbsoluto') recordAnswer(currentMode, correctName, correctName, true);
     playFeedback('correct', scores.streak);
     vibrateDevice([40]);
     showSinkoStreak();
     try { localStorage.setItem('audikus_last_study', Date.now().toString()); } catch(e) {}
   } else {
-    btn.classList.add('incorrect');
-    btns[correct].classList.add('correct');
     scores.incorrect++; scores.streak = 0;
-    recordAnswer(currentMode, correctName, selectedName, false);
+    if (currentMode !== 'oidoAbsoluto') recordAnswer(currentMode, correctName, selectedName, false);
     playFeedback('wrong');
     vibrateDevice([80, 40, 80]);
     showSinko('wrong');
-    const errType = getErrorType(currentMode, correctName, selectedName);
-    if (errType === 'inverse') {
-      fb.innerHTML = `${tx('feedbackApprox')} — <strong>${dn(selectedName)}</strong> ${tx('feedbackApproxIs')} <strong>${dn(correctName)}</strong>`;
-      fb.className = 'feedback approximation';
+    if (showFb) {
+      btn.classList.add('incorrect');
+      btns[correct].classList.add('correct');
+      const errType = getErrorType(currentMode, correctName, selectedName);
+      if (errType === 'inverse') {
+        fb.innerHTML = `${tx('feedbackApprox')} — <strong>${dn(selectedName)}</strong> ${tx('feedbackApproxIs')} <strong>${dn(correctName)}</strong>`;
+        fb.className = 'feedback approximation';
+      } else {
+        fb.textContent = `${tx('feedbackIncorrect')} ${dn(correctName)}`;
+        fb.className = 'feedback incorrect';
+      }
     } else {
-      fb.textContent = `${tx('feedbackIncorrect')} ${dn(correctName)}`;
-      fb.className = 'feedback incorrect';
+      fb.textContent = ''; fb.className = 'feedback';
     }
   }
   if (currentMode === 'progresiones' && currentQuestion && currentQuestion.func) {
     recordFuncAttempt(selected === correct);
+  }
+  if (currentMode === 'oidoAbsoluto') {
+    recordOaAttempt(selected === correct, correctName, selectedName);
+    if (oaState.drill) advanceOaDrill();
   }
   updateScoreboard();
   nextQTimer = setTimeout(() => { nextQTimer = null; nextQuestion(); }, 2800);
