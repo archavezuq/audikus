@@ -2894,8 +2894,13 @@ async function playSound() {
     freqs.forEach((f, i) => t(i * gap, f, i === freqs.length - 1 ? '0.7' : '0.5'));
   } else if (currentMode === 'oidoAbsoluto') {
     t(0, getFreq(currentQuestion.semitones, currentQuestion.register), '0.8');
-    // El tiempo para responder cuenta desde que la nota TERMINA de sonar (800ms), no desde que empieza
-    if (customSettings.oidoAbsoluto.timeoutEnabled && !oaState.drill) setTimeout(() => { if (!answered) startOaTimeout(); }, 800);
+    // El tiempo para responder cuenta desde que la nota TERMINA de sonar (800ms), no desde que empieza.
+    // Este retraso queda guardado en oaTimeoutStartDelay para que clearOaTimeout() (llamado desde
+    // stopAllSound() al salir de la tarjeta) pueda cancelarlo — si no, seguía disparando preguntas
+    // y sonido después de salir.
+    if (customSettings.oidoAbsoluto.timeoutEnabled && !oaState.drill) {
+      oaTimeoutStartDelay = setTimeout(() => { oaTimeoutStartDelay = null; if (!answered) startOaTimeout(); }, 800);
+    }
   } else if (currentMode === 'entonacion') {
     t(0, midiFreq(currentQuestion.refMidi), '0.8');
   } else if (currentMode === 'entonAcordes' || currentMode === 'entonEscalas') {
@@ -3222,6 +3227,7 @@ function renderOaFamiliarization() {
 
 // Ventana de tiempo visible (barra) — temporizador de UI, no de audio; se cancela al responder.
 let oaTimeoutTimer = null;
+let oaTimeoutStartDelay = null; // el retraso de 800ms (duración del tono) antes de arrancar la ventana real
 function startOaTimeout() {
   clearOaTimeout();
   const ms = oaTimeoutMs();
@@ -3233,6 +3239,7 @@ function startOaTimeout() {
   oaTimeoutTimer = setTimeout(() => { if (!answered) oaHandleTimeout(); }, ms);
 }
 function clearOaTimeout() {
+  if (oaTimeoutStartDelay) { clearTimeout(oaTimeoutStartDelay); oaTimeoutStartDelay = null; }
   if (oaTimeoutTimer) { clearTimeout(oaTimeoutTimer); oaTimeoutTimer = null; }
   const bar = document.getElementById('oaTimeoutBar');
   if (bar) { bar.style.transition = 'none'; bar.style.width = '0%'; }
