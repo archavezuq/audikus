@@ -1064,7 +1064,8 @@ const ui = {
       familiarizeListenBtn:'Escuchar',
       familiarizeStartBtn:'Comenzar',
       resetProgress:'Reiniciar progreso',
-      resetConfirm:'¿Reiniciar todo tu progreso de Oído Absoluto? Volverás a empezar desde la nota de partida. Esta acción no se puede deshacer.'
+      resetConfirm:'¿Reiniciar todo tu progreso de Oído Absoluto? Volverás a empezar desde la nota de partida. Esta acción no se puede deshacer.',
+      manualConfirm:(name)=>`¿Activar ${name} ahora, fuera del orden de desbloqueo normal? Empezarás su entrenamiento desde el nivel 1.`
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Tu rango vocal:`,
@@ -1227,7 +1228,8 @@ const ui = {
       familiarizeListenBtn:'Listen',
       familiarizeStartBtn:'Start',
       resetProgress:'Reset progress',
-      resetConfirm:'Reset all your Perfect Pitch progress? You will start over from the starting note. This cannot be undone.'
+      resetConfirm:'Reset all your Perfect Pitch progress? You will start over from the starting note. This cannot be undone.',
+      manualConfirm:(name)=>`Activate ${name} now, outside the normal unlock order? You'll start training it from level 1.`
     },
     sEntonacion:{
       rangeTitle:`${icon('mic')} Your vocal range:`,
@@ -3327,6 +3329,8 @@ function setOaStartNote(name) { customSettings.oidoAbsoluto.startNote = name; up
 function setOaTimeoutPref(val) { customSettings.oidoAbsoluto.timeoutEnabled = val; updateSettingsPanel(); }
 function toggleOaManualNote(name) {
   if (oaState.activeNotes.includes(name)) return;
+  const L = ui[currentLang].sOidoAbsoluto;
+  if (!confirm(L.manualConfirm(dn(name)))) return;
   oaState.activeNotes.push(name);
   oaState.subLevel = 1; // el conjunto cambió: empieza el nivel 1 con las notas nuevas, igual que un desbloqueo automático
   oaState.attempts = [];
@@ -3630,7 +3634,8 @@ function renderOptions(options, correctIndex) {
     const L = ui[currentLang].sOidoAbsoluto;
     const statusEl = document.createElement('p');
     statusEl.style.cssText = 'text-align:center;margin:0 0 10px;font-size:0.9em;color:var(--text-muted);';
-    statusEl.innerHTML = oaState.drill ? L.drillStatus(dn(oaState.drill.target)) : L.status(oaState.activeNotes.length, oaNextToUnlock() ? dn(oaNextToUnlock()) : null);
+    const oaNext = oaNextToUnlock();
+    statusEl.innerHTML = oaState.drill ? L.drillStatus(dn(oaState.drill.target)) : L.status(oaState.activeNotes.length, oaNext ? dn(oaNext) : null);
     c.appendChild(statusEl);
     if (customSettings.oidoAbsoluto.timeoutEnabled && !oaState.drill) {
       const track = document.createElement('div');
