@@ -1832,11 +1832,20 @@ const SUBSCRIPTION_ENABLED = false;
 // Fecha (UTC) en que la ficha de Play Store pasa de Pago a Gratis — se fija el día del cambio.
 const SUBSCRIPTION_CUTOVER = '2026-01-01T00:00:00Z';
 
-// TODO: leer PackageManager.getPackageInfo().firstInstallTime vía un plugin nativo pequeño
-// (igual al de Mic) y comparar contra SUBSCRIPTION_CUTOVER. Por ahora, sin ese plugin, nadie
-// queda marcado como usuario heredado automáticamente.
+// Usa el plugin nativo InstallInfo (android/.../InstallInfoPlugin.java) para leer
+// PackageManager.getPackageInfo().firstInstallTime y compararlo contra SUBSCRIPTION_CUTOVER.
+// Si la instalación es de ANTES del corte, quien la tiene ya pagó la app cuando era de pago
+// único — acceso de por vida, sin necesidad de suscribirse.
 async function isLegacyOwner() {
-  return false; // placeholder — reemplazar con la verificación real de firstInstallTime
+  try {
+    const InstallInfo = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.InstallInfo;
+    if (!InstallInfo) return false; // navegador u otra plataforma sin el plugin — no se puede verificar
+    const { firstInstallTime } = await InstallInfo.getFirstInstallTime();
+    const cutover = new Date(SUBSCRIPTION_CUTOVER).getTime();
+    return typeof firstInstallTime === 'number' && firstInstallTime < cutover;
+  } catch (e) {
+    return false; // ante cualquier error, no asumir acceso gratuito — que pase por el paywall normal
+  }
 }
 
 // TODO: usar Purchases.getCustomerInfo() de @revenuecat/purchases-capacitor y verificar el
