@@ -1710,7 +1710,8 @@ const customSettings = {
     voiceRange: 0,
     selected: musicData.entonEscalas.map(x => x.name),
     tolerance: 50
-  }
+  },
+  retoDia: { selected: [] } // se calcula un valor inicial sensato en initRetoDiaDefaults()
 };
 
 // ==================== NOMBRE DE USUARIO ====================
@@ -1879,6 +1880,7 @@ async function initAudio() {
   loadProgress();
   loadFuncState();
   loadOaState();
+  initRetoDiaDefaults();
   document.getElementById('startOverlay').style.display = 'none';
   document.getElementById('tutorialOverlay').style.display = 'none';
   updateStaticText();
@@ -4061,15 +4063,38 @@ function resetScore() {
 // ==================== RETO DEL DÍA ====================
 const RETO_MODES = ['intervalos','triadas','escalas','septimas','inversiones','progresiones','notas'];
 const RETO_TARGETS = [10, 8, 6, 8, 8, 6, 10];
-const RETO_LABELS_ES = ['10 intervalos correctos','8 tríadas correctas','6 escalas correctas','8 acordes con séptima','8 inversiones correctas','6 progresiones correctas','10 notas absolutas'];
-const RETO_LABELS_EN = ['10 correct intervals','8 correct triads','6 correct scales','8 seventh chords','8 correct inversions','6 correct progressions','10 absolute notes'];
+const RETO_LABELS_ES = ['10 intervalos correctos','8 tríadas correctas','6 escalas correctas','8 acordes con séptima','8 inversiones correctas','6 progresiones correctas','10 notas relativas'];
+const RETO_LABELS_EN = ['10 correct intervals','8 correct triads','6 correct scales','8 seventh chords','8 correct inversions','6 correct progressions','10 relative notes'];
+
+// Valor inicial del reto: solo módulos donde el usuario ya tiene progreso real; si es
+// completamente nuevo (sin ninguno todavía), empieza únicamente con Intervalos — así nunca
+// le cae de entrada un reto de un módulo que no conoce (ej. Progresiones). Configurable
+// después desde el ícono de ajustes de la propia tarjeta.
+function initRetoDiaDefaults() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('audikus_reto_config') || 'null');
+    if (saved && Array.isArray(saved.selected)) {
+      const valid = saved.selected.filter(m => RETO_MODES.includes(m));
+      if (valid.length) { customSettings.retoDia.selected = valid; return; }
+    }
+  } catch(e) {}
+  const started = RETO_MODES.filter(m => progress[m] && Object.values(progress[m]).some(d => d.total > 0));
+  customSettings.retoDia.selected = started.length ? started : ['intervalos'];
+}
+function saveRetoDiaConfig() {
+  try { localStorage.setItem('audikus_reto_config', JSON.stringify({ selected: customSettings.retoDia.selected })); } catch(e) {}
+}
 
 function getRetoDiaConfig() {
+  const sel = customSettings.retoDia.selected.length ? customSettings.retoDia.selected : ['intervalos'];
+  const activeModes = RETO_MODES.filter(m => sel.includes(m));
+  const modes = activeModes.length ? activeModes : ['intervalos'];
   const d = new Date();
   const dayOfYear = Math.floor((d - new Date(d.getFullYear(), 0, 0)) / 86400000);
   const raw = (d.getFullYear() * 1000 + dayOfYear) * 2654435761;
-  const idx = ((raw >>> 0)) % RETO_MODES.length;
-  return { mode: RETO_MODES[idx], target: RETO_TARGETS[idx], idx };
+  const pick = modes[((raw >>> 0)) % modes.length];
+  const idx = RETO_MODES.indexOf(pick); // índice original — así calzan las etiquetas RETO_LABELS_*
+  return { mode: pick, target: RETO_TARGETS[idx], idx };
 }
 
 function getTodayStr() {
@@ -4119,6 +4144,8 @@ function renderRetoDia() {
   const titleText = currentLang === 'es' ? 'Reto de hoy' : "Today's Challenge";
   const coinsText = '+10';
   card.innerHTML = `
+    <div style="position:relative;">
+    <button onclick="event.stopPropagation();showRetoConfigModal()" title="${currentLang==='es'?'Elegir módulos del reto':'Choose challenge modules'}" style="position:absolute;top:8px;right:8px;z-index:2;background:rgba(0,0,0,0.25);border:none;color:var(--text-muted);width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1;">&#9881;</button>
     <div onclick="startRetoDia()" style="cursor:pointer;background:linear-gradient(135deg,rgba(245,181,74,0.12),rgba(139,124,255,0.12));border:1.5px solid ${done?'var(--success)':'rgba(245,181,74,0.45)'};border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;transition:all 0.2s;">
       <img src="img/${done?'reto-completado':'reto-del-dia'}.svg" style="width:48px;height:48px;flex-shrink:0;">
       <div style="flex:1;min-width:0;">
@@ -4133,7 +4160,38 @@ function renderRetoDia() {
         <img src="img/corchea.svg" style="width:20px;height:20px;">
         <div style="font-size:0.78em;color:var(--warning);font-weight:700;">${coinsText}</div>
       </div>
+    </div>
     </div>`;
+}
+
+function showRetoConfigModal() {
+  const existing = document.getElementById('retoConfigModal'); if (existing) existing.remove();
+  const L = ui[currentLang];
+  const modal = document.createElement('div');
+  modal.id = 'retoConfigModal'; modal.className = 'milestone-modal-bg';
+  modal.innerHTML = `
+    <div class="milestone-modal" style="text-align:left;">
+      <div style="font-size:16px;font-weight:800;margin-bottom:6px;color:var(--primary);">${currentLang==='es'?'Módulos del Reto del Día':'Daily Challenge modules'}</div>
+      <p style="font-size:0.85em;color:var(--text-muted);margin-bottom:14px;line-height:1.5;">${currentLang==='es'?'Elige qué módulos pueden aparecer como reto diario — por lo menos uno.':'Choose which modules can show up as your daily challenge — at least one.'}</p>
+      <div class="toggle-group" id="retoConfigToggles">
+        ${RETO_MODES.map(m => `<button class="toggle-btn ${customSettings.retoDia.selected.includes(m)?'active':''}" onclick="toggleRetoDiaMode('${m}')">${(L.cards[m]&&L.cards[m].title)||m}</button>`).join('')}
+      </div>
+      <button onclick="document.getElementById('retoConfigModal').remove()" style="margin-top:18px;background:var(--primary);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">${currentLang==='es'?'Listo':'Done'}</button>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+function toggleRetoDiaMode(mode) {
+  const arr = customSettings.retoDia.selected;
+  const i = arr.indexOf(mode);
+  if (i > -1) { if (arr.length > 1) arr.splice(i,1); } else arr.push(mode);
+  saveRetoDiaConfig();
+  const L = ui[currentLang];
+  const toggles = document.getElementById('retoConfigToggles');
+  if (toggles) {
+    toggles.innerHTML = RETO_MODES.map(m => `<button class="toggle-btn ${customSettings.retoDia.selected.includes(m)?'active':''}" onclick="toggleRetoDiaMode('${m}')">${(L.cards[m]&&L.cards[m].title)||m}</button>`).join('');
+  }
+  renderRetoDia();
 }
 
 function startRetoDia() {
