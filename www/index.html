@@ -302,9 +302,13 @@
     .paywall-features { list-style: none; margin: 0 0 28px; padding: 0; display: flex; flex-direction: column; gap: 14px; }
     .paywall-features li { display: flex; align-items: center; gap: 12px; font-size: 0.92em; color: var(--text); }
     .paywall-features li svg { flex-shrink: 0; color: var(--success); }
-    .paywall-plan { background: var(--card); border: 1.5px solid var(--primary); border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; }
-    .paywall-price { font-size: 1.6em; font-weight: 800; color: var(--primary); }
-    .paywall-price-sub { font-size: 0.8em; color: var(--text-muted); margin-top: 4px; }
+    .paywall-plans { display: flex; gap: 12px; margin: 0 0 20px; }
+    .paywall-plan-card { flex: 1; background: var(--card); border: 1.5px solid var(--border); border-radius: 16px; padding: 18px 10px 16px; text-align: center; cursor: pointer; position: relative; font-family: inherit; color: inherit; }
+    .paywall-plan-card.selected { border-color: var(--primary); background: var(--pri-dim); }
+    .paywall-plan-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--success); color: #06251b; font-size: 0.65em; font-weight: 800; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+    .paywall-plan-name { font-size: 0.82em; color: var(--text-muted); font-weight: 700; margin-bottom: 8px; }
+    .paywall-plan-price { font-size: 1.2em; font-weight: 800; color: var(--text); }
+    .paywall-plan-price .unit { font-size: 0.6em; font-weight: 600; color: var(--text-muted); }
     .paywall-cta { background: var(--primary); color: #fff; border: none; border-radius: 14px; padding: 16px; font-size: 1.05em; font-weight: 800; cursor: pointer; width: 100%; margin-bottom: 14px; }
     .paywall-restore { background: transparent; border: none; color: var(--text-muted); font-size: 0.85em; cursor: pointer; text-decoration: underline; margin: 0 auto; display: block; }
     .paywall-legal { font-size: 0.72em; color: var(--text-muted); text-align: center; margin-top: 18px; line-height: 1.5; }
@@ -570,9 +574,16 @@
   <div class="paywall-title" id="pwTitle">Audikus Premium</div>
   <div class="paywall-sub" id="pwSub">Suscríbete para seguir entrenando tu oído musical</div>
   <ul class="paywall-features" id="pwFeatures"></ul>
-  <div class="paywall-plan">
-    <div class="paywall-price" id="pwPrice">—</div>
-    <div class="paywall-price-sub" id="pwPriceSub">por año</div>
+  <div class="paywall-plans">
+    <button type="button" class="paywall-plan-card" id="pwPlanMonthly" onclick="selectPaywallPlan('monthly')">
+      <div class="paywall-plan-name" id="pwPlanMonthlyName">Mensual</div>
+      <div class="paywall-plan-price" id="pwPlanMonthlyPrice">—</div>
+    </button>
+    <button type="button" class="paywall-plan-card" id="pwPlanAnnual" onclick="selectPaywallPlan('annual')">
+      <div class="paywall-plan-badge" id="pwPlanAnnualBadge">Ahorra</div>
+      <div class="paywall-plan-name" id="pwPlanAnnualName">Anual</div>
+      <div class="paywall-plan-price" id="pwPlanAnnualPrice">—</div>
+    </button>
   </div>
   <button class="paywall-cta" id="pwCta" onclick="subscribeNow()">Suscribirme</button>
   <button class="paywall-restore" id="pwRestore" onclick="restorePurchase()">Restaurar compra</button>
@@ -942,7 +953,9 @@ const ui = {
         'Entonación con micrófono en tiempo real',
         'Seguimiento de tu progreso y racha diaria'
       ],
-      priceSub: 'por año',
+      planMonthly: 'Mensual',
+      planAnnual: 'Anual',
+      save: 'Ahorra {pct}%',
       cta: 'Suscribirme',
       restore: 'Restaurar compra',
       legal: 'La suscripción se renueva automáticamente. Puedes cancelarla cuando quieras desde Google Play.'
@@ -1106,7 +1119,9 @@ const ui = {
         'Real-time microphone intonation',
         'Progress tracking and daily streak'
       ],
-      priceSub: 'per year',
+      planMonthly: 'Monthly',
+      planAnnual: 'Annual',
+      save: 'Save {pct}%',
       cta: 'Subscribe',
       restore: 'Restore purchase',
       legal: 'The subscription renews automatically. You can cancel anytime from Google Play.'
@@ -1825,12 +1840,18 @@ function changeName() {
 }
 
 // ==================== PAYWALL (suscripción) ====================
-// EN CONSTRUCCIÓN — apagado por defecto (SUBSCRIPTION_ENABLED=false) para no afectar
-// la app actual. Falta conectar: RevenueCat (checkEntitlement/subscribeNow/restorePurchase)
-// y el plugin nativo de fecha de instalación (isLegacyOwner).
+// Apagado por defecto (SUBSCRIPTION_ENABLED=false) para no afectar la app actual mientras
+// se termina de probar el flujo completo. Se activa junto con el paso 5 del plan (ficha de
+// Play Console a Gratis) y fijando SUBSCRIPTION_CUTOVER a la fecha real de ese cambio.
 const SUBSCRIPTION_ENABLED = false;
 // Fecha (UTC) en que la ficha de Play Store pasa de Pago a Gratis — se fija el día del cambio.
 const SUBSCRIPTION_CUTOVER = '2026-01-01T00:00:00Z';
+
+// Clave pública de RevenueCat para Android (proyecto "Audikus Oído Musical Android").
+// Es una API key de cliente, diseñada para vivir embebida en el app — no es secreta.
+const RC_API_KEY = 'goog_tzThPOeuUwptLefEdOdWppbOqbD';
+// Identificador del entitlement en RevenueCat que da acceso completo a la app.
+const RC_ENTITLEMENT_ID = 'premium';
 
 // Usa el plugin nativo InstallInfo (android/.../InstallInfoPlugin.java) para leer
 // PackageManager.getPackageInfo().firstInstallTime y compararlo contra SUBSCRIPTION_CUTOVER.
@@ -1848,10 +1869,36 @@ async function isLegacyOwner() {
   }
 }
 
-// TODO: usar Purchases.getCustomerInfo() de @revenuecat/purchases-capacitor y verificar el
-// entitlement 'premium'.
+// Sin bundler en este proyecto (ver CLAUDE.md), así que el SDK de RevenueCat se usa igual que
+// Mic/InstallInfo: vía el puente nativo window.Capacitor.Plugins, no como import de ES module.
+function rcPlugin() {
+  return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Purchases;
+}
+
+let _rcConfigured = false;
+async function configurePurchases() {
+  if (_rcConfigured) return true;
+  const Purchases = rcPlugin();
+  if (!Purchases) return false; // navegador u otra plataforma sin el plugin
+  try {
+    await Purchases.configure({ apiKey: RC_API_KEY });
+    _rcConfigured = true;
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 async function hasActiveSubscription() {
-  return false; // placeholder
+  try {
+    const Purchases = rcPlugin();
+    if (!Purchases || !(await configurePurchases())) return false;
+    const { customerInfo } = await Purchases.getCustomerInfo();
+    const active = customerInfo && customerInfo.entitlements && customerInfo.entitlements.active;
+    return !!(active && active[RC_ENTITLEMENT_ID]);
+  } catch (e) {
+    return false; // ante cualquier error, no asumir acceso — que pase por el paywall normal
+  }
 }
 
 async function hasAccess() {
@@ -1859,26 +1906,123 @@ async function hasAccess() {
   return (await isLegacyOwner()) || (await hasActiveSubscription());
 }
 
-function renderPaywall() {
+// Paquetes del offering "default" (audikus_premium:monthly / audikus_premium:yearly),
+// cacheados tras la primera carga para no repetir la llamada de red cada vez que se abre
+// el paywall en la misma sesión.
+let _rcPackages = { monthly: null, annual: null };
+let _rcPackagesLoaded = false;
+let pwSelectedPlan = 'annual'; // preseleccionado por ser el de mejor valor
+
+async function loadPaywallPackages() {
+  if (_rcPackagesLoaded) return;
+  try {
+    const Purchases = rcPlugin();
+    if (!Purchases || !(await configurePurchases())) return;
+    const offerings = await Purchases.getOfferings();
+    const current = offerings && offerings.current;
+    if (current) {
+      _rcPackages.monthly = current.monthly || null;
+      _rcPackages.annual = current.annual || null;
+      _rcPackagesLoaded = true;
+    }
+  } catch (e) { /* se reintenta la próxima vez que se abra el paywall */ }
+}
+
+function selectPaywallPlan(plan) {
+  if (!_rcPackages[plan]) return; // no cambiar a un plan que no cargó
+  pwSelectedPlan = plan;
+  document.getElementById('pwPlanMonthly').classList.toggle('selected', plan === 'monthly');
+  document.getElementById('pwPlanAnnual').classList.toggle('selected', plan === 'annual');
+}
+
+async function renderPaywall() {
   const L = ui[currentLang].paywall;
   document.getElementById('pwTitle').textContent = L.title;
   document.getElementById('pwSub').textContent = L.sub;
   document.getElementById('pwFeatures').innerHTML = L.features
     .map(f => `<li>${icon('check', 20, 'var(--success)')} ${f}</li>`).join('');
-  document.getElementById('pwPriceSub').textContent = L.priceSub;
+  document.getElementById('pwPlanMonthlyName').textContent = L.planMonthly;
+  document.getElementById('pwPlanAnnualName').textContent = L.planAnnual;
   document.getElementById('pwCta').textContent = L.cta;
   document.getElementById('pwRestore').textContent = L.restore;
   document.getElementById('pwLegal').textContent = L.legal;
-  // TODO: reemplazar '—' por el precio real que devuelva RevenueCat (producto localizado)
-  document.getElementById('pwPrice').textContent = '—';
+
+  await loadPaywallPackages();
+  const monthlyProduct = _rcPackages.monthly && _rcPackages.monthly.product;
+  const annualProduct = _rcPackages.annual && _rcPackages.annual.product;
+  document.getElementById('pwPlanMonthlyPrice').innerHTML = monthlyProduct
+    ? `${monthlyProduct.priceString}<span class="unit">/${currentLang === 'es' ? 'mes' : 'mo'}</span>` : '—';
+  document.getElementById('pwPlanAnnualPrice').innerHTML = annualProduct
+    ? `${annualProduct.priceString}<span class="unit">/${currentLang === 'es' ? 'año' : 'yr'}</span>` : '—';
+
+  // Ahorro calculado a partir de los precios reales (no hardcodeado), por si cambian en Play Console.
+  const badge = document.getElementById('pwPlanAnnualBadge');
+  const pct = (monthlyProduct && annualProduct && monthlyProduct.price > 0)
+    ? Math.round((1 - annualProduct.price / (monthlyProduct.price * 12)) * 100) : 0;
+  badge.textContent = L.save.replace('{pct}', pct);
+  badge.style.display = pct > 0 ? '' : 'none';
+
+  // Si el plan preferido (anual) no cargó pero el otro sí, usa el que haya disponible.
+  if (!_rcPackages[pwSelectedPlan] && _rcPackages[pwSelectedPlan === 'annual' ? 'monthly' : 'annual']) {
+    pwSelectedPlan = pwSelectedPlan === 'annual' ? 'monthly' : 'annual';
+  }
+  selectPaywallPlan(pwSelectedPlan);
 }
 function showPaywall() { renderPaywall(); document.getElementById('paywallOverlay').style.display = 'flex'; }
 function hidePaywall() { document.getElementById('paywallOverlay').style.display = 'none'; }
 
-// TODO: Purchases.purchasePackage(...) de RevenueCat; al confirmar, hidePaywall() + continuar a initAudio()
-function subscribeNow() {}
-// TODO: Purchases.restorePurchases(...); si queda con entitlement activo, hidePaywall() + continuar
-function restorePurchase() {}
+async function subscribeNow() {
+  const Purchases = rcPlugin();
+  const pkg = _rcPackages[pwSelectedPlan];
+  if (!Purchases || !pkg) return;
+  const btn = document.getElementById('pwCta');
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = currentLang === 'es' ? 'Procesando…' : 'Processing…';
+  try {
+    const { customerInfo } = await Purchases.purchasePackage({ aPackage: pkg });
+    const active = customerInfo && customerInfo.entitlements && customerInfo.entitlements.active;
+    if (active && active[RC_ENTITLEMENT_ID]) {
+      hidePaywall();
+      initAudio();
+    }
+  } catch (e) {
+    if (!(e && e.userCancelled)) {
+      alert(currentLang === 'es'
+        ? 'No se pudo completar la compra. Intenta de nuevo.'
+        : 'Could not complete the purchase. Please try again.');
+    }
+  } finally {
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+async function restorePurchase() {
+  const Purchases = rcPlugin();
+  if (!Purchases || !(await configurePurchases())) return;
+  const btn = document.getElementById('pwRestore');
+  const original = btn.textContent;
+  btn.textContent = currentLang === 'es' ? 'Restaurando…' : 'Restoring…';
+  try {
+    const { customerInfo } = await Purchases.restorePurchases();
+    const active = customerInfo && customerInfo.entitlements && customerInfo.entitlements.active;
+    if (active && active[RC_ENTITLEMENT_ID]) {
+      hidePaywall();
+      initAudio();
+    } else {
+      alert(currentLang === 'es'
+        ? 'No se encontró ninguna suscripción activa con esta cuenta.'
+        : 'No active subscription was found for this account.');
+    }
+  } catch (e) {
+    alert(currentLang === 'es'
+      ? 'No se pudo restaurar la compra. Intenta de nuevo.'
+      : 'Could not restore the purchase. Please try again.');
+  } finally {
+    btn.textContent = original;
+  }
+}
 
 // ==================== INIT ====================
 async function initAudio() {
