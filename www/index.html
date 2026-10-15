@@ -1850,12 +1850,13 @@ function changeName() {
 }
 
 // ==================== PAYWALL (suscripción) ====================
-// Apagado por defecto (SUBSCRIPTION_ENABLED=false) para no afectar la app actual mientras
-// se termina de probar el flujo completo. Se activa junto con el paso 5 del plan (ficha de
-// Play Console a Gratis) y fijando SUBSCRIPTION_CUTOVER a la fecha real de ese cambio.
-const SUBSCRIPTION_ENABLED = false;
-// Fecha (UTC) en que la ficha de Play Store pasa de Pago a Gratis — se fija el día del cambio.
-const SUBSCRIPTION_CUTOVER = '2026-01-01T00:00:00Z';
+// Activado el 2026-10-15 para el lanzamiento real de la suscripción. La ficha de Play Console
+// pasa a Gratis DESPUÉS de que este build quede publicado y aprobado (ver SUBSCRIPTION_CUTOVER).
+const SUBSCRIPTION_ENABLED = true;
+// Fecha (UTC) en que la ficha de Play Store pasa de Pago a Gratis. Fijada el 2026-10-15 con
+// margen hasta el día siguiente para cubrir el tiempo de revisión de Google antes de convertir
+// la ficha — no convertir a Gratis antes de este momento.
+const SUBSCRIPTION_CUTOVER = '2026-10-16T12:00:00Z';
 
 // Clave pública de RevenueCat para Android (proyecto "Audikus Oído Musical Android").
 // Es una API key de cliente, diseñada para vivir embebida en el app — no es secreta.
