@@ -1968,7 +1968,15 @@ async function renderPaywall() {
   }
   selectPaywallPlan(pwSelectedPlan);
 }
-function showPaywall() { renderPaywall(); document.getElementById('paywallOverlay').style.display = 'flex'; }
+function showPaywall() {
+  renderPaywall();
+  // El overlay de inicio tiene un z-index más alto que el paywall (queda pensado para
+  // tapar todo lo demás mientras arranca la app) — hay que ocultarlo explícitamente o
+  // se queda encima del paywall, bloqueándolo aunque esté técnicamente "visible" detrás.
+  document.getElementById('startOverlay').style.display = 'none';
+  document.getElementById('tutorialOverlay').style.display = 'none';
+  document.getElementById('paywallOverlay').style.display = 'flex';
+}
 function hidePaywall() { document.getElementById('paywallOverlay').style.display = 'none'; }
 
 async function subscribeNow() {
