@@ -788,23 +788,30 @@ function _freqToNote(freq) {
 }
 const _fallback = new Tone.PolySynth(Tone.Synth).toDestination();
 let _sampler = null;
+// _sampler queda asignado (no-null) apenas se construye el Tone.Sampler, mucho antes de que
+// terminen de descargarse los samples reales (onload) — usar "if (_sampler)" como señal de
+// "listo para tocar" dispara el piano sampleado con buffers todavía sin cargar, y esas notas
+// no suenan (sin caer al sintetizador de respaldo, que sí sonaría siempre). _samplerReady es
+// la señal real de "ya se puede usar", recién en true dentro de onload.
+let _samplerReady = false;
 const synth = {
   triggerAttackRelease(freq, dur, time) {
     const note = _freqToNote(freq);
+    const useSampler = _sampler && _samplerReady;
     let d = dur;
-    if (_sampler) { const s = parseFloat(dur); if (!isNaN(s) && s < 1.5) d = 2; }
-    (_sampler || _fallback).triggerAttackRelease(note, d, time);
+    if (useSampler) { const s = parseFloat(dur); if (!isNaN(s) && s < 1.5) d = 2; }
+    (useSampler ? _sampler : _fallback).triggerAttackRelease(note, d, time);
   },
   triggerAttack(freq) {
     const note = _freqToNote(freq);
-    try { (_sampler || _fallback).triggerAttack(note); } catch(e) {}
+    try { ((_sampler && _samplerReady) ? _sampler : _fallback).triggerAttack(note); } catch(e) {}
   },
   triggerRelease(freq) {
     const note = _freqToNote(freq);
-    try { (_sampler || _fallback).triggerRelease(note); } catch(e) {}
+    try { ((_sampler && _samplerReady) ? _sampler : _fallback).triggerRelease(note); } catch(e) {}
   },
   releaseAll() {
-    if (_sampler) _sampler.releaseAll();
+    if (_sampler && _samplerReady) _sampler.releaseAll();
     _fallback.releaseAll();
   }
 };
@@ -2059,8 +2066,8 @@ async function initAudio() {
       'A5':'A5.mp3','C6':'C6.mp3'
     },
     baseUrl: 'audio/piano/',
-    onload: () => {},
-    onerror: () => { _sampler = null; }
+    onload: () => { _samplerReady = true; },
+    onerror: () => { _sampler = null; _samplerReady = false; }
   }).toDestination();
 }
 
@@ -3060,11 +3067,15 @@ async function playSound() {
   } else if (currentMode === 'oidoAbsoluto') {
     t(0, getFreq(currentQuestion.semitones, currentQuestion.register), '0.8');
     // El tiempo para responder cuenta desde que la nota TERMINA de sonar (800ms), no desde que empieza.
-    // Este retraso queda guardado en oaTimeoutStartDelay para que clearOaTimeout() (llamado desde
-    // stopAllSound() al salir de la tarjeta) pueda cancelarlo — si no, seguía disparando preguntas
-    // y sonido después de salir.
+    // Se programa en el MISMO reloj de audio de Tone (scheduleAudio/Transport), no en un setTimeout
+    // de JS aparte — antes usaba un setTimeout independiente, que corre por reloj real y se
+    // desincroniza si el motor de audio se atrasa (sampler todavía cargando, WebView bajo carga,
+    // etc.): la cuenta regresiva terminaba igual aunque la nota no hubiera llegado a sonar.
+    // oaTimeoutStartDelay guarda el id para que clearOaTimeout() (llamado desde stopAllSound() al
+    // salir de la tarjeta) pueda cancelarlo — si no, seguía disparando preguntas y sonido después de salir.
     if (customSettings.oidoAbsoluto.timeoutEnabled && !oaState.drill) {
-      oaTimeoutStartDelay = setTimeout(() => { oaTimeoutStartDelay = null; if (!answered) startOaTimeout(); }, 800);
+      oaTimeoutStartDelay = scheduleAudio(800, () => { oaTimeoutStartDelay = null; if (!answered) startOaTimeout(); });
+      studyTimers.push(oaTimeoutStartDelay);
     }
   } else if (currentMode === 'entonacion') {
     t(0, midiFreq(currentQuestion.refMidi), '0.8');
@@ -3404,7 +3415,9 @@ function startOaTimeout() {
   oaTimeoutTimer = setTimeout(() => { if (!answered) oaHandleTimeout(); }, ms);
 }
 function clearOaTimeout() {
-  if (oaTimeoutStartDelay) { clearTimeout(oaTimeoutStartDelay); oaTimeoutStartDelay = null; }
+  // oaTimeoutStartDelay ahora es un evento de Tone.Transport (ver playSound), no un setTimeout —
+  // se cancela con Transport.clear, no con clearTimeout.
+  if (oaTimeoutStartDelay !== null) { Tone.Transport.clear(oaTimeoutStartDelay); oaTimeoutStartDelay = null; }
   if (oaTimeoutTimer) { clearTimeout(oaTimeoutTimer); oaTimeoutTimer = null; }
   const bar = document.getElementById('oaTimeoutBar');
   if (bar) { bar.style.transition = 'none'; bar.style.width = '0%'; }
