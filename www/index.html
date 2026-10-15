@@ -1496,8 +1496,8 @@ const musicData = {
     // ii→V/V: alteración cromática, D y A comunes, solo F sube a F# (sensible secundaria);
     // V/V→V: D común, F# resuelve a G; V→I: igual que en ii-V-I
     { name:'ii - V/V - V - I (Mayor)',  roots:[2,2,7,0],  chords:[[2,5,9],[2,6,9],[2,7,11],[4,7,12]] },
-    // I→vi: 2 comunes + G sube; vi→IV: 2 comunes + E sube; IV→V: 3 voces suben por tono
-    // (IV→V: bajo sube, voces superiores bajan en mov. contrario)
+    // I→vi: 2 comunes + G sube; vi→IV: 2 comunes + E sube;
+    // IV→V: bajo sube, voces superiores bajan en movimiento contrario
     { name:'I - vi - IV - V (Mayor)',   roots:[0,9,5,7],  chords:[[0,4,7],[0,4,9],[0,5,9],[-1,2,7]] },
     // I→iii: E y G comunes, solo C baja a B (mediante, sin cromatismo); iii→vi: E común, resto por grado;
     // vi→IV y IV→V: iguales a 'I - vi - IV - V'
@@ -1513,7 +1513,10 @@ const musicData = {
     { name:'i - iv - V - i (Menor)',    roots:[0,5,7,0],  chords:[[0,3,7],[0,5,8],[-1,2,7],[0,3,7]] },
     // iv→N6 (napolitana, 1a inversión — bajo en Fa, igual que iv): Ab común, C baja a Ab y F baja a Db
     // (doblar la 5a/Ab, no el bajo: doblar el bajo aquí da 8as paralelas al resolver a V);
-    // N6→V: bajo sube por grado, Db (nota napolitana) baja a B (sensible); V→i: igual que en 'i - iv - V - i'
+    // N6→V: bajo sube por grado (Fa→Sol); el Lab doblado grave salta 3ª menor hasta B (sensible)
+    // y Reb (nota napolitana) sube a Re — no baja a la sensible, porque esa resolución clásica
+    // exige doblar el bajo (ver nota arriba: produce 8as paralelas con este voicing). V→i: igual
+    // que en 'i - iv - V - i'
     { name:'i - iv - N6 - V - i (Menor)', roots:[0,5,5,7,0], chords:[[0,3,7],[0,5,8],[-4,1,8],[-1,2,7],[0,3,7]] },
     // i→VI: C y Eb comunes + G sube; VI→III: Eb común + 2 bajan; III→VII: Bb común + 2 bajan
     { name:'i - VI - III - VII (Menor)',roots:[0,8,3,10], chords:[[0,3,7],[0,3,8],[-2,3,7],[-2,2,5]] },
