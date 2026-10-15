@@ -2183,8 +2183,14 @@ function openExerciseOverlay() {
 
 // Programa una nota en el reloj de audio de Tone (no en el hilo JS) para que no se
 // retrase ni se amontone con otras si el hilo principal está ocupado un momento.
+// Nunca se programa exactamente en "+0" (ahora mismo): si el reloj de Transport ya avanzó
+// una fracción mínima entre que se calcula y se evalúa el evento, Tone.js puede saltárselo
+// en silencio por considerarlo "ya pasado" — afecta sobre todo a la PRIMERA nota de cada
+// secuencia (delay=0), que es la que llega justo al límite. Un margen mínimo de 15ms evita
+// el caso límite sin que se note al oído.
 function scheduleAudio(delayMs, fn) {
-  return Tone.Transport.scheduleOnce(() => { if (audioReady) fn(); }, '+' + (delayMs / 1000));
+  const safeDelayMs = Math.max(delayMs, 15);
+  return Tone.Transport.scheduleOnce(() => { if (audioReady) fn(); }, '+' + (safeDelayMs / 1000));
 }
 
 // Silencia todo: temporizadores de reproducción, avance automático a la siguiente pregunta y notas sonando
@@ -2194,6 +2200,7 @@ function stopAllSound() {
   studyTimers = [];
   if (nextQTimer) { clearTimeout(nextQTimer); nextQTimer = null; }
   clearOaTimeout();
+  oaModalPending = false; // por si se sale del ejercicio con un modal de OA abierto sin cerrarlo
   try { synth.releaseAll(); } catch(e) {}
 }
 
@@ -2437,6 +2444,17 @@ function renderStudyMode() {
   });
 }
 
+// Tempo de Escalas: negra = 66 bpm en "lenta"; "rápida" es la misma velocidad de pulso pero
+// en corcheas (el doble de rápido) — no un valor de bpm distinto.
+const ESCALA_BPM = 66;
+function escalaNoteMs() {
+  const quarter = 60000 / ESCALA_BPM; // ≈909.09ms
+  return customSettings.escalas.tempo === 'slow' ? quarter : quarter / 2;
+}
+// Cuánto se extiende cada nota más allá del ataque de la siguiente, para que se solapen y
+// suenen ligadas (legato) en vez de soltarse justo antes de que entre la próxima.
+const ESCALA_LEGATO_OVERLAP_MS = 40;
+
 function playStudyItem(item) {
   if (!audioReady) return;
   studyTimers.forEach(t => Tone.Transport.clear(t));
@@ -2463,16 +2481,25 @@ function playStudyItem(item) {
   } else if (currentMode === 'escalas') {
     const root = Math.floor(Math.random() * 12);
     const up = item.intervals;
-    const down = [...(item.descIntervals || item.intervals)].reverse();
-    const step = customSettings.escalas.tempo === 'slow' ? 500 : 250; // lento vs rápido (original, sin cambios)
+    // .slice(1): el primer elemento invertido es la misma nota (la cima) con la que ya terminó
+    // "up" — sin el slice quedaban dos notas seguidas a la MISMA frecuencia, y con las notas
+    // ligadas (ver releaseAt abajo) el sampler terminaba cortando la segunda al confundir cuál
+    // de las dos debía soltar. La cima ya quedó sonando por la subida, no hace falta repetirla.
+    const down = [...(item.descIntervals || item.intervals)].reverse().slice(1);
+    const step = escalaNoteMs(); // negra a 66bpm (lenta) / corchea a la misma velocidad (rápida)
     const turn = step + 50; // pausa breve antes de bajar
     const seq = [...up, ...down];
+    const delays = seq.map((s, i) => i < up.length ? i * step : (up.length * step + turn + (i - up.length) * step));
     seq.forEach((s, i) => {
-      const delay = i < up.length ? i * step : (up.length * step + turn + (i - up.length) * step);
+      const delay = delays[i];
       const freq = getFreq(s + root);
       const isLast = i === seq.length - 1;
       studyTimers.push(scheduleAudio(delay, () => synth.triggerAttack(freq)));
-      studyTimers.push(scheduleAudio(delay + (isLast ? 550 : step - 12), () => synth.triggerRelease(freq)));
+      // Se libera un poco DESPUÉS de que ya sonó la siguiente (no justo antes), para que se
+      // solapen y queden ligadas — usa delays[i+1] en vez de "step" fijo porque en el giro
+      // (subida→bajada) el espaciado real es "turn", no "step".
+      const releaseAt = isLast ? delay + 550 : delays[i + 1] + ESCALA_LEGATO_OVERLAP_MS;
+      studyTimers.push(scheduleAudio(releaseAt, () => synth.triggerRelease(freq)));
     });
   } else if (currentMode === 'notas') {
     const ro = 0; // referencia siempre en Do (C4) en modo estudio
@@ -3040,13 +3067,16 @@ async function playSound() {
     });
   } else if (currentMode === 'escalas') {
     const ko = currentQuestion.keyOffset || 0;
-    const gap = customSettings.escalas.tempo === 'slow' ? 760 : 380; // lento vs rápido (original, sin cambios)
+    const gap = escalaNoteMs(); // negra a 66bpm (lenta) / corchea a la misma velocidad (rápida)
     const ivs = currentQuestion.intervals;
     ivs.forEach((s, i) => {
       const freq = getFreq(s + ko);
       const isLast = i === ivs.length - 1;
       studyTimers.push(scheduleAudio(i * gap, () => synth.triggerAttack(freq)));
-      studyTimers.push(scheduleAudio(i * gap + (isLast ? 550 : gap - 12), () => synth.triggerRelease(freq)));
+      // Se libera un poco DESPUÉS de que ya sonó la siguiente (no justo antes), para que se
+      // solapen y queden ligadas en vez de dejar un silencio entre cada nota.
+      const releaseAt = isLast ? i * gap + 550 : (i + 1) * gap + ESCALA_LEGATO_OVERLAP_MS;
+      studyTimers.push(scheduleAudio(releaseAt, () => synth.triggerRelease(freq)));
     });
   } else if (currentMode === 'notas') {
     const oct = currentQuestion.register || 4;
@@ -3404,6 +3434,10 @@ function renderOaFamiliarization() {
 // Ventana de tiempo visible (barra) — temporizador de UI, no de audio; se cancela al responder.
 let oaTimeoutTimer = null;
 let oaTimeoutStartDelay = null; // el retraso de 800ms (duración del tono) antes de arrancar la ventana real
+// Se pone en true cuando un modal de Oído Absoluto (subir de nivel, refuerzo dirigido,
+// graduación) toma control del avance — checkAnswer()/oaHandleTimeout() lo revisan antes de
+// programar su propio auto-avance de 2800/1800ms, para no duplicar ni competir con el del modal.
+let oaModalPending = false;
 function startOaTimeout() {
   clearOaTimeout();
   const ms = oaTimeoutMs();
@@ -3434,10 +3468,22 @@ function oaHandleTimeout() {
   recordOaAttempt(false, currentQuestion.name, '(sin respuesta)');
   if (oaState.drill) advanceOaDrill();
   updateScoreboard();
-  nextQTimer = setTimeout(() => { nextQTimer = null; nextQuestion(); }, 1800);
+  // Si recordOaAttempt mostró un modal (subir de nivel, refuerzo dirigido, graduación), ese
+  // modal ya controla el avance al cerrarse — no programar otro auto-avance aquí encima.
+  if (oaModalPending) { oaModalPending = false; }
+  else { nextQTimer = setTimeout(() => { nextQTimer = null; nextQuestion(); }, 1800); }
 }
 
+// Las tres funciones de abajo (unlock, graduación, refuerzo dirigido) interrumpen el flujo
+// normal de pregunta→respuesta con un modal. checkAnswer() ya dejó programado un auto-avance
+// de 2800ms (nextQTimer) antes de que supiéramos que iba a aparecer este modal — si no se
+// cancela aquí, ese temporizador viejo dispara nextQuestion() por su cuenta en algún momento
+// indeterminado detrás o después del modal (a veces dejando la pantalla congelada un rato,
+// a veces duplicando el avance si el modal también dispara el suyo). Cada modal controla su
+// propio avance explícitamente al cerrarse, así que cancelamos el viejo al mostrarlo.
 function showOaUnlockModal(name) {
+  if (nextQTimer) { clearTimeout(nextQTimer); nextQTimer = null; }
+  oaModalPending = true;
   fireConfetti();
   const existing = document.getElementById('oaUnlockModal'); if (existing) existing.remove();
   const L = ui[currentLang].sOidoAbsoluto;
@@ -3448,12 +3494,14 @@ function showOaUnlockModal(name) {
       <div style="width:72px;height:72px;margin:0 auto 14px;border-radius:50%;border:2.5px solid var(--primary);background:rgba(108,99,255,0.18);display:grid;place-items:center;">${icon('unlock',32,'var(--primary)')}</div>
       <div style="font-size:13px;color:var(--primary);font-weight:800;letter-spacing:.04em;margin-bottom:4px;">${L.unlockTitle}</div>
       <div style="font-size:15px;line-height:1.5;margin-bottom:20px;">${L.unlockBody(dn(name), oaState.activeNotes.length)}</div>
-      <button onclick="document.getElementById('oaUnlockModal').remove()" style="background:var(--primary);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">${L.unlockBtn}</button>
+      <button onclick="document.getElementById('oaUnlockModal').remove();nextQuestion();" style="background:var(--primary);color:#fff;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">${L.unlockBtn}</button>
     </div>`;
   document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  modal.addEventListener('click', e => { if (e.target === modal) { modal.remove(); nextQuestion(); } });
 }
 function showOaGraduationModal() {
+  if (nextQTimer) { clearTimeout(nextQTimer); nextQTimer = null; }
+  oaModalPending = true;
   fireConfetti();
   const existing = document.getElementById('oaGradModal'); if (existing) existing.remove();
   const L = ui[currentLang].sOidoAbsoluto;
@@ -3464,12 +3512,14 @@ function showOaGraduationModal() {
       <div style="width:72px;height:72px;margin:0 auto 14px;border-radius:50%;border:2.5px solid #f5b54a;background:rgba(245,181,74,0.18);display:grid;place-items:center;">${icon('trophy',32,'#f5b54a')}</div>
       <div style="font-size:13px;color:#f5b54a;font-weight:800;letter-spacing:.04em;margin-bottom:4px;">${L.gradTitle}</div>
       <div style="font-size:15px;line-height:1.5;margin-bottom:20px;">${L.gradBody}</div>
-      <button onclick="document.getElementById('oaGradModal').remove()" style="background:#f5b54a;color:#1a1200;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">${L.gradBtn}</button>
+      <button onclick="document.getElementById('oaGradModal').remove();nextQuestion();" style="background:#f5b54a;color:#1a1200;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:800;cursor:pointer;width:100%;">${L.gradBtn}</button>
     </div>`;
   document.body.appendChild(modal);
-  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  modal.addEventListener('click', e => { if (e.target === modal) { modal.remove(); nextQuestion(); } });
 }
 function showOaDrillIntro(name) {
+  if (nextQTimer) { clearTimeout(nextQTimer); nextQTimer = null; }
+  oaModalPending = true;
   const existing = document.getElementById('oaDrillModal'); if (existing) existing.remove();
   const L = ui[currentLang].sOidoAbsoluto;
   const modal = document.createElement('div');
@@ -3890,7 +3940,10 @@ function checkAnswer(selected, correct, btn) {
     if (oaState.drill) advanceOaDrill();
   }
   updateScoreboard();
-  nextQTimer = setTimeout(() => { nextQTimer = null; nextQuestion(); }, 2800);
+  // Si recordOaAttempt mostró un modal (subir de nivel, refuerzo dirigido, graduación), ese
+  // modal ya controla el avance al cerrarse — no programar otro auto-avance aquí encima.
+  if (oaModalPending) { oaModalPending = false; }
+  else { nextQTimer = setTimeout(() => { nextQTimer = null; nextQuestion(); }, 2800); }
 }
 
 function popEl(id) {
