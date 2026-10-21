@@ -296,6 +296,13 @@
 
     /* ── Paywall overlay ──────────────────────────────────────── */
     .paywall-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 9998; display: flex; flex-direction: column; overflow-y: auto; padding: max(env(safe-area-inset-top,28px),28px) 24px max(env(safe-area-inset-bottom,24px),24px); }
+    .paywall-close {
+      position: absolute; top: max(env(safe-area-inset-top,14px),14px); right: 14px;
+      width: 40px; height: 40px; border-radius: 50%; border: none;
+      background: var(--card); color: var(--text-muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent; z-index: 1;
+    }
     .paywall-logo { width: 64px; height: 64px; border-radius: 16px; margin: 0 auto 18px; display: block; }
     .paywall-title { font-size: 1.4em; font-weight: 800; text-align: center; color: var(--text); margin-bottom: 8px; }
     .paywall-sub { font-size: 0.95em; text-align: center; color: var(--text-muted); margin-bottom: 26px; line-height: 1.5; }
@@ -570,6 +577,9 @@
 
 <!-- PAYWALL (suscripción) -->
 <div id="paywallOverlay" class="paywall-overlay" style="display:none;">
+  <button type="button" class="paywall-close" id="pwClose" onclick="dismissPaywall()" aria-label="Cerrar">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+  </button>
   <img src="img/audikus_icon.png" alt="Audikus" class="paywall-logo">
   <div class="paywall-title" id="pwTitle">Audikus Premium</div>
   <div class="paywall-sub" id="pwSub">Suscríbete para seguir entrenando tu oído musical</div>
@@ -889,6 +899,7 @@ const ICON_PATHS = {
   cap:"<path d=\"M2.5 9.5L12 5l9.5 4.5L12 14z\"></path><path d=\"M6.5 11.5V16c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3v-4.5\"></path><path d=\"M21.5 9.5v5\"></path>",
   chart:"<path d=\"M4 20h16\"></path><path d=\"M7 16v-4M12 16V6M17 16V9\"></path>",
   check:"<circle cx=\"12\" cy=\"12\" r=\"9\"></circle><path d=\"M8 12.5l3 3 5-6\"></path>",
+  close:"<path d=\"M6 6l12 12M18 6L6 18\"></path>",
   compass:"<circle cx=\"12\" cy=\"12\" r=\"9\"></circle><path d=\"M15.5 8.5l-2 5-5 2 2-5z\"></path>",
   dot:"<circle cx=\"12\" cy=\"12\" r=\"5.5\" fill=\"currentColor\" stroke=\"none\"></circle>",
   down:"<path d=\"M12 4v16M6 14l6 6 6-6\"></path>",
@@ -963,6 +974,7 @@ const ui = {
       planMonthly: 'Mensual',
       planAnnual: 'Anual',
       save: 'Ahorra {pct}%',
+      close: 'Cerrar',
       cta: 'Suscribirme',
       restore: 'Restaurar compra',
       legal: 'La suscripción se renueva automáticamente. Puedes cancelarla cuando quieras desde Google Play.'
@@ -1129,6 +1141,7 @@ const ui = {
       planMonthly: 'Monthly',
       planAnnual: 'Annual',
       save: 'Save {pct}%',
+      close: 'Close',
       cta: 'Subscribe',
       restore: 'Restore purchase',
       legal: 'The subscription renews automatically. You can cancel anytime from Google Play.'
@@ -1954,6 +1967,7 @@ async function renderPaywall() {
     .map(f => `<li>${icon('check', 20, 'var(--success)')} ${f}</li>`).join('');
   document.getElementById('pwPlanMonthlyName').textContent = L.planMonthly;
   document.getElementById('pwPlanAnnualName').textContent = L.planAnnual;
+  document.getElementById('pwClose').setAttribute('aria-label', L.close);
   document.getElementById('pwCta').textContent = L.cta;
   document.getElementById('pwRestore').textContent = L.restore;
   document.getElementById('pwLegal').textContent = L.legal;
@@ -1989,6 +2003,15 @@ function showPaywall() {
   document.getElementById('paywallOverlay').style.display = 'flex';
 }
 function hidePaywall() { document.getElementById('paywallOverlay').style.display = 'none'; }
+
+// Requisito de la política de suscripciones de Google Play: el paywall debe poder cerrarse
+// con un botón claro/visible, sin obligar a suscribirse para salir. Como la app no tiene nivel
+// gratuito, "cerrar" vuelve a la pantalla de inicio (desde ahí el usuario puede salir de la app
+// con el botón/gesto atrás del sistema) en vez de dejarlo entrar al contenido sin acceso.
+function dismissPaywall() {
+  hidePaywall();
+  document.getElementById('startOverlay').style.display = 'flex';
+}
 
 async function subscribeNow() {
   const Purchases = rcPlugin();
