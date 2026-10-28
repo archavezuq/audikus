@@ -580,7 +580,7 @@
   <button type="button" class="paywall-close" id="pwClose" onclick="dismissPaywall()" aria-label="Cerrar">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
   </button>
-  <img src="img/audikus_icon.png" alt="Audikus" class="paywall-logo">
+  <img src="img/audikus_icon.png" alt="Audikus" class="paywall-logo" id="pwLogo" onclick="tapPaywallLogo()">
   <div class="paywall-title" id="pwTitle">Audikus Premium</div>
   <div class="paywall-sub" id="pwSub">Suscríbete para seguir entrenando tu oído musical</div>
   <ul class="paywall-features" id="pwFeatures"></ul>
@@ -646,6 +646,10 @@
           <span style="font-size:12px;color:var(--primary);font-weight:700;">±50 cents</span>
         </div>
         <div class="app-footer">
+          <!-- Requisito de la política de suscripciones de Google Play: el app debe incluir, en sus
+               ajustes de cuenta, un enlace para gestionar/cancelar la suscripción (no basta con un
+               texto diciendo "cancela desde Google Play" sin un enlace real). -->
+          <button class="btn" id="manageSubBtn" style="width:100%;margin-bottom:12px;background:var(--card);border:1px solid var(--border);font-size:0.85em;" onclick="openSubscriptionManagement()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;flex-shrink:0"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path></svg> Gestionar suscripción</button>
           <button class="btn" style="width:100%;margin-bottom:12px;background:var(--card);border:1px solid var(--border);font-size:0.85em;" onclick="restartTutorial()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;flex-shrink:0"><path d="M12 6.5C10 5 7 4.5 3.5 5v13c3.5-.5 6.5 0 8.5 1.5 2-1.5 5-2 8.5-1.5V5c-3.5-.5-6.5 0-8.5 1.5z"></path><path d="M12 6.5v13"></path></svg> Ver tutorial</button>
           <button class="btn" style="width:100%;margin-bottom:16px;background:var(--card);border:1px solid var(--border);font-size:0.85em;" onclick="changeName()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;flex-shrink:0"><path d="M15 4.5l4.5 4.5L9 19.5H4.5V15z"></path><path d="M12.5 7l4.5 4.5"></path></svg> Cambiar nombre</button>
           <p id="aboutFocusNote" style="font-size:0.82em;color:var(--text-muted);margin-bottom:10px;line-height:1.5;"></p>
@@ -666,7 +670,7 @@
 
   </div><!-- /content-area -->
 
-  <!-- BOTTOM NAV (4 tabs) -->
+  <!-- BOTTOM NAV (5 tabs) -->
   <div class="bottom-nav">
     <button class="nav-btn active" id="nav-learn" onclick="switchNavTab('learn')">
       <div class="nav-indicator">
@@ -696,6 +700,14 @@
         <svg class="nav-svg" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
       </div>
       <span class="nav-label" id="navLabelProgress">Progreso</span>
+    </button>
+    <button class="nav-btn" id="nav-settings" onclick="switchNavTab('settings')">
+      <div class="nav-indicator">
+        <svg class="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 7h9M17 7h3M4 17h3M11 17h9"></path><circle cx="15" cy="7" r="2"></circle><circle cx="9" cy="17" r="2"></circle>
+        </svg>
+      </div>
+      <span class="nav-label" id="navLabelSettings">Ajustes</span>
     </button>
   </div>
 
@@ -982,6 +994,7 @@ const ui = {
     btnStudy:'Aprender', btnTest:'Practicar', btnProgress:'Mi Progreso',
     navLearn:'Inicio', navRacha:'Racha', navCamino:'Camino', navProgress:'Progreso', navSettings:'Ajustes',
     settingsScreen:'Ajustes', segStudy:'Aprender', segTest:'Practicar',
+    manageSubscription:'Gestionar suscripción',
     studyTitle:'Aprender — Explora y Aprende',
     studySubtitle:'Presiona cada tarjeta para escuchar el sonido',
     progressTitle:'📊 Mi Progreso', settingsTitle:'⚙️ Configuración Personalizada',
@@ -1149,6 +1162,7 @@ const ui = {
     btnStudy:'Learn', btnTest:'Practice', btnProgress:'My Progress',
     navLearn:'Home', navRacha:'Streak', navCamino:'Path', navProgress:'Progress', navSettings:'Settings',
     settingsScreen:'Settings', segStudy:'Learn', segTest:'Practice',
+    manageSubscription:'Manage subscription',
     studyTitle:'Learn — Explore and Listen',
     studySubtitle:'Tap each card to hear the sound',
     progressTitle:'📊 My Progress', settingsTitle:'⚙️ Custom Settings',
@@ -1925,8 +1939,19 @@ async function hasActiveSubscription() {
   }
 }
 
+// Acceso de reviewer: independiente de Play Billing a propósito. Las suscripciones de prueba
+// activadas vía License Testing renuevan acelerado y EXPIRAN tras pocos ciclos (lo vimos
+// nosotros mismos — la anual "renovaba en 22 minutos") — si la revisión de Google tarda más que
+// eso (ya pasó, tardó días), la cuenta de prueba que les dimos ya no tendría la suscripción
+// activa para cuando abran la app, y volveríamos a chocar con el mismo rechazo. Este bypass no
+// depende de que ninguna compra siga viva — se documenta explícitamente para Google en las
+// instrucciones de acceso de Play Console (ver 'Cualquier otra información...').
+function hasReviewerAccess() {
+  try { return localStorage.getItem('audikus_reviewer_access') === '1'; } catch(e) { return false; }
+}
 async function hasAccess() {
   if (!SUBSCRIPTION_ENABLED) return true;
+  if (hasReviewerAccess()) return true;
   return (await isLegacyOwner()) || (await hasActiveSubscription());
 }
 
@@ -2013,6 +2038,24 @@ function dismissPaywall() {
   document.getElementById('startOverlay').style.display = 'flex';
 }
 
+// Toca el logo del paywall 7 veces seguidas (en menos de 2s entre toques, igual que el gesto
+// estándar de Android para activar "Opciones de desarrollador") para desbloquear el acceso sin
+// depender de una suscripción de Play Billing activa. Documentado para el revisor de Google en
+// Play Console → Datos de inicio de sesión.
+let _pwLogoTaps = 0, _pwLogoTapTimer = null;
+function tapPaywallLogo() {
+  _pwLogoTaps++;
+  if (_pwLogoTapTimer) clearTimeout(_pwLogoTapTimer);
+  _pwLogoTapTimer = setTimeout(() => { _pwLogoTaps = 0; }, 2000);
+  if (_pwLogoTaps >= 7) {
+    _pwLogoTaps = 0;
+    clearTimeout(_pwLogoTapTimer);
+    try { localStorage.setItem('audikus_reviewer_access', '1'); } catch(e) {}
+    hidePaywall();
+    initAudio();
+  }
+}
+
 async function subscribeNow() {
   const Purchases = rcPlugin();
   const pkg = _rcPackages[pwSelectedPlan];
@@ -2064,6 +2107,14 @@ async function restorePurchase() {
   } finally {
     btn.textContent = original;
   }
+}
+
+// Requisito de la política de suscripciones de Google Play: enlace real (no solo texto) para
+// gestionar/cancelar la suscripción desde los ajustes de la app. window.open(url, '_system') es
+// la convención de Capacitor para delegar la URL al manejador externo del sistema (en Android,
+// normalmente abre la app de Play Store directo en el Centro de Suscripciones).
+function openSubscriptionManagement() {
+  window.open('https://play.google.com/store/account/subscriptions', '_system');
 }
 
 // ==================== INIT ====================
@@ -2160,6 +2211,8 @@ function updateStaticText() {
   // Settings screen title
   const ssEl = document.getElementById('settingsScreenTitle');
   if (ssEl) ssEl.textContent = L.settingsScreen;
+  const msEl = document.getElementById('manageSubBtn');
+  if (msEl) msEl.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;flex-shrink:0"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path></svg> ' + L.manageSubscription;
   const afnEl = document.getElementById('aboutFocusNote');
   if (afnEl) afnEl.textContent = L.aboutFocusNote;
   // Segmented buttons (study/test)
